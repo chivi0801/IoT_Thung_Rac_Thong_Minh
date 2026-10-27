@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tổng quan – Thùng rác thông minh</title>
+  
+  <!-- Typography Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/tong-quan.css">
+
+  <!-- Scripts -->
+  <script src="assets/js/common.js" defer></script>
+  <script src="assets/js/tong-quan.js" defer></script>
+</head>
+
+<body>
+  <!-- Sidebar Navigation (Desktop sidebar & Mobile bottom tab bar) -->
+  <aside>
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <path d="M9 9h6v6H9zM2 9h2M2 15h2M20 9h2M20 15h2" />
+        </svg>
+      </div>
+      <div><b>IoT System</b><span>Smart Waste Bin</span></div>
+    </div>
+    
+    <div class="navlabel">ĐIỀU HƯỚNG</div>
+    <nav>
+      <a href="tong-quan.html" class="on" aria-current="page">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+        </span>
+        <span class="nav-text">Tổng quan</span>
+      </a>
+      <a href="thiet-bi.html">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
+            <path d="M11 19h8.2a1.8 1.8 0 0 0 1.565-.914 1.78 1.78 0 0 0 .009-1.771L17.2 10" />
+            <path d="m14 16 3 3-3 3" />
+            <path d="M8.2 5.5h7.6" />
+            <path d="m18 3-2 3.5 2 3.5" />
+            <path d="m6.5 9-2-3.5 3.5-2" />
+          </svg>
+        </span>
+        <span class="nav-text">Phân loại</span>
+      </a>
+      <a href="lich-su.html">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+            <path d="M3 3v5h5M12 7v5l3 2" />
+          </svg>
+        </span>
+        <span class="nav-text">Lịch sử</span>
+      </a>
+    </nav>
+    
+    <div class="hw">
+      <div><span>PHẦN CỨNG</span><span class="chip">ESP32-S3</span></div>
+      <div><span>TRẠNG THÁI</span><span class="on-t" id="sideOn">ONLINE</span></div>
+    </div>
+  </aside>
+
+  <!-- Main View -->
+  <main>
+    <!-- Desktop Topbar -->
+    <div class="top"><i></i>THÙNG RÁC THÔNG MINH</div>
+
+    <!-- Mobile Topbar (< 768px) -->
+    <header class="mobile-top-bar">
+      <h1 class="mobile-page-title">Tổng Quan</h1>
+      <button class="btn-user-avatar" aria-label="Tài khoản người dùng" title="Tài khoản cá nhân">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </button>
+    </header>
+    
+    <div class="wrap">
+
+      <!-- ===================================================================
+           A. DESKTOP VIEW (>= 768px): KHỚP CHÍNH XÁC 100% ẢNH MẪU DESKTOP
+           =================================================================== -->
+      <div class="desktop-dashboard-view">
+        <h1 class="desktop-h1">Tổng quan</h1>
+
+        <!-- Top 4 KPI Cards Grid -->
+        <section class="kpi-grid">
+          <!-- Card 1: Tổng lượt phân loại -->
+          <article class="card kpi-card summary">
+            <div>
+              <div class="kpi-sub">TỔNG LƯỢNG TIẾP NHẬN</div>
+              <div class="kpi-title">Tổng lượt phân loại</div>
+              <div class="kpi-val-row">
+                <span class="kpi-num" id="totalCount">86</span>
+                <span class="kpi-unit-inline">VẬT THỂ</span>
+              </div>
+            </div>
+            <div class="kpi-foot">
+              TỶ LỆ THÀNH CÔNG: <b id="successRate">100%</b>
+            </div>
+          </article>
+
+          <!-- Card 2: 01. NHỰA -->
+          <article class="card kpi-card nhua">
+            <div>
+              <div class="kpi-header">
+                <span class="kpi-label nhua">
+                  <span class="dot-c"></span>01. NHỰA
+                </span>
+                <div class="kpi-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi-num nhua" id="nhuaCount">38</div>
+              <div class="kpi-subtext" id="nhuaPercent">VẬT THỂ (44.2%)</div>
+            </div>
+            <a href="ThietBi.html" class="compartment-btn nhua" title="Xem chi tiết ngăn số 1">NGĂN SỐ 1</a>
+          </article>
+
+          <!-- Card 3: 02. KIM LOẠI -->
+          <article class="card kpi-card kim-loai">
+            <div>
+              <div class="kpi-header">
+                <span class="kpi-label kim-loai">
+                  <span class="dot-c"></span>02. KIM LOẠI
+                </span>
+                <div class="kpi-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="4" y="3" width="16" height="18" rx="2" />
+                    <path d="M8 7h8M8 12h8M8 17h4" />
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi-num kim-loai" id="kimloaiCount">21</div>
+              <div class="kpi-subtext" id="kimloaiPercent">VẬT THỂ (24.4%)</div>
+            </div>
+            <a href="ThietBi.html" class="compartment-btn kim-loai" title="Xem chi tiết ngăn số 2">NGĂN SỐ 2</a>
+          </article>
+
+          <!-- Card 4: 03. HỮU CƠ -->
+          <article class="card kpi-card huu-co">
+            <div>
+              <div class="kpi-header">
+                <span class="kpi-label huu-co">
+                  <span class="dot-c"></span>03. HỮU CƠ
+                </span>
+                <div class="kpi-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M11 20A7 7 0 0 1 4 13C4 9.13 7.13 6 11 6c.55 0 1 .45 1 1v13Z" />
+                    <path d="M13 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7-.55 0-1 .45-1 1v13Z" />
+                    <path d="M12 6V2" />
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi-num huu-co" id="huucoCount">27</div>
+              <div class="kpi-subtext" id="huucoPercent">VẬT THỂ (31.4%)</div>
+            </div>
+            <a href="ThietBi.html" class="compartment-btn huu-co" title="Xem chi tiết ngăn số 3">NGĂN SỐ 3</a>
+          </article>
+        </section>
+
+        <!-- Bottom 2-Column Grid -->
+        <section class="content-grid">
+          <!-- Left: Kết quả nhận diện gần đây -->
+          <article class="card">
+            <div class="card-header-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>KẾT QUẢ NHẬN DIỆN GẦN ĐÂY</span>
+            </div>
+
+            <!-- Camera Stream Simulation with Target Bounding Box -->
+            <div class="camera-frame" id="cameraViewport">
+              <div class="cam-live-indicator">ESP32 CAM</div>
+              <div class="ai-bounding-box" id="aiBox">
+                <div class="ai-label-tag" id="aiLabel">
+                  <div id="aiLabelClass">plastic_bottle</div>
+                  <div id="aiLabelConf">96.4%</div>
+                </div>
+                <svg id="aiIcon" class="ai-icon-target" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M6 3h12l-1.5 16a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2L6 3Z" />
+                  <path d="M6 8h12" />
+                  <path d="M12 11c-1 1.5-2 2.5-2 3.5a2 2 0 0 0 4 0c0-1-1-2-2-3.5Z" />
+                </svg>
+              </div>
+              <div class="cam-confidence-label" id="camConfText">ĐỘ TIN CẬY: 96.4%</div>
+            </div>
+
+            <!-- Detection Details List -->
+            <div class="detail-box">
+              <div class="detail-row">
+                <span class="detail-label">PHÂN LOẠI:</span>
+                <span class="badge-pill pl" id="detailCat">NHỰA</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">THỜI GIAN:</span>
+                <b class="mono" id="detailTime">10:24:15</b>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">ĐỘ TIN CẬY</span>
+                <b class="mono" id="detailConf">96.4%</b>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">TRẠNG THÁI</span>
+                <span class="badge-status" id="detailStatus">ĐÃ PHÂN LOẠI</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Right: Hoạt động gần đây -->
+          <article class="card">
+            <div class="card-header-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+              </svg>
+              <span>HOẠT ĐỘNG GẦN ĐÂY</span>
+            </div>
+
+            <!-- Activity Log Table Container -->
+            <div class="table-card-wrapper">
+              <table class="table-container">
+                <thead>
+                  <tr>
+                    <th>THỜI GIAN</th>
+                    <th>VẬT THỂ</th>
+                    <th>PHÂN LOẠI</th>
+                    <th>TRẠNG THÁI</th>
+                  </tr>
+                </thead>
+                <tbody id="activityTableBody"></tbody>
+              </table>
+            </div>
+
+            <!-- Activity Footer -->
+            <div class="activity-footer">
+              <div class="activity-count">
+                HIỂN THỊ: <b id="displayedRows">4</b> / <b id="totalRows">86</b> HOẠT ĐỘNG
+              </div>
+              <div class="btn-group">
+                <button class="btn-action ghost" id="btnExportCsv" title="Tải xuống tệp CSV lịch sử hoạt động">
+                  [ XUẤT CSV LOG ]
+                </button>
+                <button class="btn-action primary" id="btnViewAll" title="Xem toàn bộ lịch sử chi tiết">
+                  [ XEM TẤT CẢ ]
+                </button>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+
+
+      <!-- ===================================================================
+           B. MOBILE VIEW (< 768px): KHỚP CHÍNH XÁC 100% ẢNH MẪU MOBILE
+           =================================================================== -->
+      <div class="mobile-dashboard-view">
+
+        <!-- 1. Card Vi điều khiển ESP32-S3 -->
+        <section class="m-controller-card">
+          <div class="m-controller-info">
+            <div class="m-controller-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="13" width="20" height="8" rx="2" />
+                <path d="M6 13V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5" />
+                <line x1="12" y1="6" x2="12" y2="2" />
+                <circle cx="6" cy="17" r="1" fill="#166534" />
+                <circle cx="10" cy="17" r="1" fill="#166534" />
+              </svg>
+            </div>
+            <div class="m-controller-text">
+              <div class="m-controller-label">VI ĐIỀU KHIỂN</div>
+              <div class="m-controller-name">ESP32-S3</div>
+            </div>
+          </div>
+          <div class="m-controller-status-badge">
+            <span class="m-pulse-dot">●</span> ĐANG KẾT NỐI
+          </div>
+        </section>
+
+        <!-- 2. Hero Dark Green Card (Tổng lượt phân loại 86) -->
+        <section class="m-hero-kpi-card">
+          <div class="m-hero-left">
+            <div class="m-hero-subtitle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              <span>TỔNG LƯỢT PHÂN LOẠI</span>
+            </div>
+            <div class="m-hero-counter-row">
+              <span class="m-hero-number" id="mTotalCount">86</span>
+              <span class="m-hero-unit">lượt xử lý</span>
+            </div>
+            <div class="m-hero-cycle-note">
+              <span class="m-cycle-dot">●</span>
+              <span>Chu kỳ làm việc hôm nay</span>
+            </div>
+          </div>
+
+          <div class="m-hero-right">
+            <div class="m-hero-radar-wrap">
+              <!-- Radar Circles Graphics -->
+              <svg class="m-hero-radar-svg" viewBox="0 0 140 140">
+                <circle cx="70" cy="70" r="64" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="3 4" fill="none" />
+                <circle cx="70" cy="70" r="48" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4 4" fill="none" />
+                <circle cx="70" cy="70" r="32" stroke="rgba(255,255,255,0.16)" stroke-width="1" fill="none" />
+                <line x1="70" y1="6" x2="70" y2="134" stroke="rgba(255,255,255,0.07)" stroke-width="1" />
+                <line x1="6" y1="70" x2="134" y2="70" stroke="rgba(255,255,255,0.07)" stroke-width="1" />
+              </svg>
+              <!-- Center White Recycling Symbol Badge -->
+              <div class="m-hero-recycle-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
+                  <path d="M11 19h8.2a1.8 1.8 0 0 0 1.565-.914 1.78 1.78 0 0 0 .009-1.771L17.2 10" />
+                  <path d="m14 16 3 3-3 3" />
+                  <path d="M8.2 5.5h7.6" />
+                  <path d="m18 3-2 3.5 2 3.5" />
+                  <path d="m6.5 9-2-3.5 3.5-2" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Trio of Mini KPI Cards (Nhựa, Kim loại, Hữu cơ) -->
+        <section class="m-kpi-trio">
+          <!-- Nhựa -->
+          <a href="ThietBi.html" class="m-kpi-box box-nhua" title="Xem ngăn Nhựa số 1">
+            <div class="m-box-icon pl">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+            </div>
+            <div class="m-box-title pl">Nhựa</div>
+            <div class="m-box-num" id="mNhuaCount">38</div>
+            <div class="m-box-pill pl" id="mNhuaPercent">44.2%</div>
+          </a>
+
+          <!-- Kim loại -->
+          <a href="ThietBi.html" class="m-kpi-box box-kim-loai" title="Xem ngăn Kim loại số 2">
+            <div class="m-box-icon me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="3" width="16" height="18" rx="2" />
+                <path d="M8 7h8M8 12h8M8 17h4" />
+              </svg>
+            </div>
+            <div class="m-box-title me">Kim loại</div>
+            <div class="m-box-num" id="mKimloaiCount">21</div>
+            <div class="m-box-pill me" id="mKimloaiPercent">24.4%</div>
+          </a>
+
+          <!-- Hữu cơ -->
+          <a href="ThietBi.html" class="m-kpi-box box-huu-co" title="Xem ngăn Hữu cơ số 3">
+            <div class="m-box-icon or">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 20A7 7 0 0 1 4 13C4 9.13 7.13 6 11 6c.55 0 1 .45 1 1v13Z" />
+                <path d="M13 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7-.55 0-1 .45-1 1v13Z" />
+                <path d="M12 6V2" />
+              </svg>
+            </div>
+            <div class="m-box-title or">Hữu cơ</div>
+            <div class="m-box-num" id="mHuucoCount">27</div>
+            <div class="m-box-pill or" id="mHuucoPercent">31.4%</div>
+          </a>
+        </section>
+
+        <!-- 4. Card: KẾT QUẢ MỚI NHẤT -->
+        <section class="m-latest-result-card">
+          <div class="m-card-header">
+            <div class="m-card-header-left">
+              <div class="m-check-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+              </div>
+              <span class="m-card-title-mono">KẾT QUẢ MỚI NHẤT</span>
+            </div>
+            <div class="m-time-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span id="mLatestTime">10:24:15</span>
+            </div>
+          </div>
+
+          <div class="m-result-inner-box">
+            <div class="m-result-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                <line x1="6" y1="2" x2="6" y2="4" />
+                <line x1="10" y1="2" x2="10" y2="4" />
+                <line x1="14" y1="2" x2="14" y2="4" />
+              </svg>
+            </div>
+            <div class="m-result-details">
+              <div class="m-result-name" id="mLatestItem">Chai nhựa</div>
+              <div class="m-result-cat">
+                <span>Phân loại: </span><b class="col-pl" id="mLatestCat">Nhựa</b>
+              </div>
+            </div>
+            <div class="m-result-status-btn">ĐÃ GẠT VÀO NGĂN</div>
+          </div>
+        </section>
+
+        <!-- 5. Card: Hoạt động gần đây -->
+        <section class="m-recent-activities-card">
+          <div class="m-card-header">
+            <div class="m-activities-title">Hoạt động gần đây</div>
+            <div class="m-badge-count-pill">3 mục mới</div>
+          </div>
+
+          <div class="m-activities-list">
+            <!-- Item 1: Lon nhôm soda -->
+            <div class="m-activity-row">
+              <div class="m-act-icon-circle bg-me">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polygon points="12 6 16.5 9.5 15 15 9 15 7.5 9.5 12 6" />
+                </svg>
+              </div>
+              <div class="m-act-info">
+                <div class="m-act-title">Lon nhôm soda</div>
+                <div class="m-act-sub">
+                  <span class="col-me">Kim loại</span>
+                  <span class="m-act-sep">•</span>
+                  <span>Ngăn số 2</span>
+                </div>
+              </div>
+              <div class="m-act-time">10:21:04</div>
+            </div>
+
+            <!-- Item 2: Vỏ chuối -->
+            <div class="m-activity-row">
+              <div class="m-act-icon-circle bg-or">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 20A7 7 0 0 1 4 13C4 9.13 7.13 6 11 6c.55 0 1 .45 1 1v13Z" />
+                  <path d="M13 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7-.55 0-1 .45-1 1v13Z" />
+                  <path d="M12 6V2" />
+                </svg>
+              </div>
+              <div class="m-act-info">
+                <div class="m-act-title">Vỏ chuối</div>
+                <div class="m-act-sub">
+                  <span class="col-or">Hữu cơ</span>
+                  <span class="m-act-sep">•</span>
+                  <span>Ngăn số 3</span>
+                </div>
+              </div>
+              <div class="m-act-time">10:15:42</div>
+            </div>
+
+            <!-- Item 3: Ly nhựa trà sữa -->
+            <div class="m-activity-row">
+              <div class="m-act-icon-circle bg-pl">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                  <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                </svg>
+              </div>
+              <div class="m-act-info">
+                <div class="m-act-title">Ly nhựa trà sữa</div>
+                <div class="m-act-sub">
+                  <span class="col-pl">Nhựa</span>
+                  <span class="m-act-sep">•</span>
+                  <span>Ngăn số 1</span>
+                </div>
+              </div>
+              <div class="m-act-time">10:02:18</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. Action Button: Làm mới dữ liệu cảm biến -->
+        <button type="button" class="btn-refresh-sensors" id="btnRefreshSensors" title="Làm mới trạng thái và dữ liệu cảm biến">
+          <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.19" />
+          </svg>
+          <span>Làm mới dữ liệu cảm biến</span>
+        </button>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal View All Activities -->
+  <div class="modal-backdrop" id="modalViewAll" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Lịch sử hoạt động phân loại</h3>
+        <button class="modal-close" id="modalClose" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-search">
+          <input type="text" id="searchInput" placeholder="Tìm kiếm vật thể, mã phân loại...">
+          <select id="filterCategory">
+            <option value="ALL">Tất cả phân loại</option>
+            <option value="NHỰA">Nhựa</option>
+            <option value="KIM LOẠI">Kim loại</option>
+            <option value="HỮU CƠ">Hữu cơ</option>
+          </select>
+        </div>
+        <div class="table-card-wrapper">
+          <table class="table-container">
+            <thead>
+              <tr>
+                <th>THỜI GIAN</th>
+                <th>VẬT THỂ</th>
+                <th>PHÂN LOẠI</th>
+                <th>ĐỘ TIN CẬY</th>
+                <th>TRẠNG THÁI</th>
+              </tr>
+            </thead>
+            <tbody id="modalTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast" id="toast" role="status"></div>
+</body>
+
+</html>
