@@ -83,15 +83,10 @@
     // Cập nhật Banner cảnh báo
     var banner = $('banner');
     var bannerTx = $('bannerTx');
-    var navDot = $('navDot');
 
     if (banner && bannerTx) {
       banner.classList.toggle('show', full.length > 0);
       bannerTx.textContent = full.join(' · ') + (full.length > 0 ? '. Cần đổ rác sớm.' : '');
-    }
-
-    if (navDot) {
-      navDot.classList.toggle('show', full.length > 0);
     }
   }
 

@@ -60,7 +60,7 @@ var SmartBin = (function () {
       href = href.split('#')[0].split('?')[0];
 
       var isCurrent = false;
-      if (path.endsWith(href) || (href.includes('tongquan') && (path.endsWith('/') || path.endsWith('index.html')))) {
+      if (path.endsWith(href) || ((href.includes('tong-quan') || href.includes('tongquan')) && (path.endsWith('/') || path.endsWith('index.html')))) {
         isCurrent = true;
       }
 
