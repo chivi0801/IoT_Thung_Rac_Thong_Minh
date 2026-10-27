@@ -1,0 +1,870 @@
+/* ==========================================================================
+   THIẾT BỊ & PHÂN LOẠI STYLESHEET (thiet-bi.css)
+   Hỗ trợ:
+   1. Desktop: Giám sát phân loại AI + Mức đầy 3 ngăn rác & Cấu hình phần cứng
+   2. Mobile (< 768px): Khớp 100% ảnh mẫu [MÔ-ĐUN AI VISION] Giám sát phân loại,
+      luồng camera thời gian thực, quy trình 3 bước và kết quả servo gạt rác.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. COMMON & DESKTOP STYLES (>= 768px)
+   ========================================================================== */
+
+/* Grid Layouts */
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+.g3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.g2 {
+  grid-template-columns: 1.1fr 1fr;
+}
+
+.sec {
+  margin-top: 20px;
+}
+
+/* Alert Banner */
+.banner {
+  display: none;
+  gap: 12px;
+  align-items: center;
+  background: var(--bad-bg);
+  border: 1px solid var(--bad);
+  color: var(--bad);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.banner.show {
+  display: flex;
+}
+
+/* 3 Waste Compartments */
+.cp {
+  border-top: 4px solid var(--c);
+}
+
+.cp.pl {
+  --c: var(--pl);
+  --cb: var(--pl-bg);
+}
+
+.cp.me {
+  --c: var(--me);
+  --cb: var(--me-bg);
+}
+
+.cp.or {
+  --c: var(--or);
+  --cb: var(--or-bg);
+}
+
+.cp h3 {
+  font: 700 14px var(--mono);
+  color: var(--c);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.cp h3::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--c);
+}
+
+.big {
+  font-size: clamp(40px, 4.5vw, 52px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1;
+}
+
+.big small {
+  font-size: 22px;
+  color: var(--mut);
+  margin-left: 2px;
+}
+
+.pill {
+  display: inline-block;
+  font: 700 12px var(--mono);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-top: 10px;
+}
+
+.s-ok {
+  background: var(--or-bg);
+  color: var(--ok);
+}
+
+.s-warn {
+  background: var(--pl-bg);
+  color: var(--warn);
+}
+
+.s-bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+/* Level Progress Bar */
+.bar {
+  height: 12px;
+  background: var(--soft);
+  border-radius: 99px;
+  margin: 18px 0 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--ok);
+  transition: width .5s ease, background .3s ease;
+}
+
+.bar.warn span { background: var(--warn); }
+.bar.bad span { background: var(--bad); }
+
+.scale {
+  display: flex;
+  justify-content: space-between;
+  font: 11px var(--mono);
+  color: var(--mut);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--mut);
+  margin: 14px 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+
+.meta b {
+  color: var(--tx);
+  font-family: var(--mono);
+}
+
+/* Hardware Info Rows */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  gap: 12px;
+}
+
+.row:last-child {
+  border: 0;
+}
+
+.row span:first-child {
+  color: var(--mut);
+}
+
+.row b {
+  font-family: var(--mono);
+  font-weight: 500;
+  text-align: right;
+}
+
+/* WiFi Signal Indicator */
+.wifi {
+  display: inline-flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.wifi i {
+  width: 4px;
+  background: var(--ok);
+  border-radius: 1px;
+}
+
+.wifi i:nth-child(1) { height: 5px; }
+.wifi i:nth-child(2) { height: 8px; }
+.wifi i:nth-child(3) { height: 12px; }
+.wifi i:nth-child(4) { height: 16px; background: var(--line); }
+
+/* Settings / Configurations */
+.set {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.set:last-of-type {
+  border: 0;
+}
+
+.set label {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.set label b {
+  font-family: var(--mono);
+  color: var(--pri);
+}
+
+.set p {
+  font-size: 12px;
+  color: var(--mut);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+input[type=range] {
+  width: 100%;
+  accent-color: var(--pri);
+  height: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   2. MOBILE AI VISION MONITORING SCREEN (KHỚP 100% ẢNH MẪU SMARTPHONE)
+   ========================================================================== */
+.mobile-ai-vision {
+  display: none;
+}
+
+/* Sub-header on Mobile */
+.ai-module-tag {
+  font: 700 11px var(--mono);
+  letter-spacing: .08em;
+  color: var(--pri);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-vision-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ai-vision-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--tx);
+}
+
+.badge-live-stream {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e3f8ef;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font: 700 11px var(--mono);
+  letter-spacing: .04em;
+}
+
+.badge-live-stream::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulseDot 1.5s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.2); }
+}
+
+/* Dark Camera Live Stream Frame */
+.live-camera-feed {
+  background: #08101a;
+  border-radius: 18px;
+  height: 310px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6), 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Subtle camera scanning grid background */
+.live-camera-feed::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(0, 223, 162, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 223, 162, 0.03) 1px, transparent 1px);
+  background-size: 22px 22px;
+  pointer-events: none;
+}
+
+/* Camera Top Overlays */
+.cam-top-overlay {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  font: 700 11px var(--mono);
+  color: #94a3b8;
+  z-index: 5;
+}
+
+.cam-rec-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.rec-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: pulseDot 1s infinite;
+}
+
+.cam-fps-badge {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Neon Green / Cyan AI Bounding Box */
+.neon-bounding-box {
+  width: 175px;
+  height: 195px;
+  border: 2px solid #00dfa2;
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 223, 162, 0.03);
+  box-shadow: 0 0 15px rgba(0, 223, 162, 0.15), inset 0 0 15px rgba(0, 223, 162, 0.05);
+}
+
+/* Top Neon Label Tag */
+.neon-label-tag {
+  position: absolute;
+  top: -16px;
+  left: 10px;
+  background: #00dfa2;
+  color: #051610;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 800;
+  line-height: 1.25;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+.neon-label-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.neon-label-title svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+}
+
+.neon-label-sub {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+/* Crosshair & Bottle Silhouette Inside Box */
+.crosshair-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.target-crosshair {
+  width: 68px;
+  height: 68px;
+  border: 1.5px dashed rgba(0, 223, 162, 0.5);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-right: -16px;
+}
+
+.target-crosshair::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00dfa2;
+}
+
+.target-bottle-icon {
+  width: 52px;
+  height: 52px;
+  stroke: #00dfa2;
+  fill: none;
+  stroke-width: 1.8;
+  z-index: 2;
+  filter: drop-shadow(0 0 6px rgba(0, 223, 162, 0.4));
+}
+
+/* Bottom Confidence Tag Inside Box */
+.box-conf-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid #00dfa2;
+  color: #00dfa2;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font: 700 10.5px var(--mono);
+  letter-spacing: .02em;
+}
+
+/* Camera Bottom Overlays */
+.cam-bottom-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  font: 700 11px var(--mono);
+  color: #94a3b8;
+  z-index: 5;
+}
+
+.cam-bottom-overlay span {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Sensor & Latency Bar under camera */
+.sensor-latency-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 4px 16px;
+  font-size: 12.5px;
+}
+
+.sensor-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tx);
+  font-weight: 500;
+}
+
+.sensor-info svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--mut);
+}
+
+.latency-pill {
+  background: #eef4ee;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 3px 10px;
+  font: 700 11px var(--mono);
+  color: var(--tx);
+}
+
+/* Process Timeline Card (3 Bước) */
+.process-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.process-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.process-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 800 13px var(--mono);
+  color: var(--tx);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.process-title svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--pri);
+}
+
+.cycle-badge {
+  background: #f3f8f3;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font: 700 11px var(--mono);
+  color: var(--mut);
+}
+
+/* 3-Step Stepper */
+.stepper-timeline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  margin: 10px 10px 6px;
+}
+
+.stepper-timeline::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: #10b981;
+  z-index: 1;
+}
+
+.step-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  flex: 1;
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--pri);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.25);
+}
+
+.step-circle svg {
+  width: 16px;
+  height: 16px;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+}
+
+.step-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tx);
+  margin-bottom: 4px;
+}
+
+.step-sub {
+  font: 500 11px var(--mono);
+  color: var(--mut);
+}
+
+.step-sub.tag-pill {
+  background: #f3f8f3;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-weight: 700;
+}
+
+.step-sub.done {
+  color: #059669;
+  font-weight: 700;
+  font-family: var(--sans);
+}
+
+/* Detection Result Card */
+.detection-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.detection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.detection-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--tx);
+}
+
+.detection-icon-wrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #e3f8ef;
+  display: grid;
+  place-items: center;
+}
+
+.detection-icon-wrap svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--pri);
+}
+
+.rc-id-badge {
+  background: #f3f8f3;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font: 700 11px var(--mono);
+  color: var(--mut);
+}
+
+/* Detection Detail Rows */
+.det-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 13.5px;
+  border-bottom: 1px solid #f0f4f0;
+}
+
+.det-row:last-of-type {
+  border-bottom: none;
+}
+
+.det-row span:first-child {
+  color: var(--mut);
+  font-weight: 500;
+}
+
+.det-row .val-name {
+  font-weight: 800;
+  color: var(--tx);
+  font-size: 14.5px;
+}
+
+.pet-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ea580c;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 4px 14px;
+  font: 700 11.5px var(--sans);
+  letter-spacing: .02em;
+}
+
+.pet-badge svg {
+  width: 14px;
+  height: 14px;
+  stroke: #ffffff;
+}
+
+.success-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e3f8ef;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font: 700 12px var(--sans);
+}
+
+.success-badge svg {
+  width: 14px;
+  height: 14px;
+  stroke: #047857;
+  stroke-width: 2.5;
+}
+
+/* Actuator Servo SG90 Note Box */
+.actuator-note-box {
+  background: #f7faf7;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--tx);
+}
+
+.actuator-icon-wrap {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--ok);
+  margin-top: 2px;
+}
+
+.actuator-icon-wrap svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+/* Bottom Hardware Mini Bar */
+.hw-mini-bar {
+  background: #eef4ee;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hw-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 11.5px var(--mono);
+  color: var(--pri);
+}
+
+.hw-item svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--pri);
+}
+
+/* ==========================================================================
+   3. RESPONSIVE MEDIA QUERIES
+   ========================================================================== */
+
+/* Mobile view switch (< 768px) */
+@media (max-width: 767px) {
+  /* Hide Desktop View on Mobile */
+  .desktop-device-view {
+    display: none !important;
+  }
+
+  /* Show Mobile AI Vision View */
+  .mobile-ai-vision {
+    display: block !important;
+  }
+}
+
+/* Desktop view switch (>= 768px) */
+@media (min-width: 768px) {
+  .desktop-device-view {
+    display: block !important;
+  }
+
+  .mobile-ai-vision {
+    display: none !important;
+  }
+}
+
+/* Laptop & Tablet (768px - 1100px) */
+@media (min-width: 768px) and (max-width: 1100px) {
+  .g3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .g2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Very Small Mobile (< 375px) */
+@media (max-width: 374px) {
+  .live-camera-feed {
+    height: 270px;
+  }
+
+  .neon-bounding-box {
+    width: 150px;
+    height: 170px;
+  }
+
+  .stepper-timeline {
+    margin: 8px 4px;
+  }
+
+  .step-label {
+    font-size: 11px;
+  }
+}

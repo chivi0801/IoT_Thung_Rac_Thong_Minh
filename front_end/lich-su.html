@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lịch sử phân loại – Thùng rác thông minh</title>
+  
+  <!-- Typography Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/sidebar.css">
+  <link rel="stylesheet" href="assets/css/lich-su.css">
+
+  <!-- Scripts -->
+  <script src="assets/js/common.js" defer></script>
+  <script src="assets/js/sidebar.js" defer></script>
+  <script src="assets/js/lich-su.js" defer></script>
+</head>
+
+<body>
+  <!-- Sidebar Navigation (Desktop sidebar & Mobile bottom tab bar) -->
+  <aside id="sidebar-container" class="sidebar-container" aria-label="Menu điều hướng hệ thống">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <path d="M9 9h6v6H9zM2 9h2M2 15h2M20 9h2M20 15h2" />
+        </svg>
+      </div>
+      <div><b>IoT System</b><span>Smart Waste Bin</span></div>
+    </div>
+    
+    <div class="navlabel">ĐIỀU HƯỚNG</div>
+    <nav>
+      <a href="tong-quan.html" data-page="tong-quan">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+        </span>
+        <span class="nav-text">Tổng quan</span>
+      </a>
+      <a href="thiet-bi.html" data-page="thiet-bi">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
+            <path d="M11 19h8.2a1.8 1.8 0 0 0 1.565-.914 1.78 1.78 0 0 0 .009-1.771L17.2 10" />
+            <path d="m14 16 3 3-3 3" />
+            <path d="M8.2 5.5h7.6" />
+            <path d="m18 3-2 3.5 2 3.5" />
+            <path d="m6.5 9-2-3.5 3.5-2" />
+          </svg>
+        </span>
+        <span class="nav-text">
+          <span class="desktop-label">Thiết bị</span>
+          <span class="mobile-label">Phân loại</span>
+        </span>
+      </a>
+      <a href="lich-su.html" data-page="lich-su" class="on" aria-current="page">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+            <path d="M3 3v5h5M12 7v5l3 2" />
+          </svg>
+        </span>
+        <span class="nav-text">Lịch sử</span>
+      </a>
+    </nav>
+    
+    <div class="hw">
+      <div><span>PHẦN CỨNG</span><span class="chip">ESP32-S3</span></div>
+      <div><span>TRẠNG THÁI</span><span class="on-t" id="sideOn">ONLINE</span></div>
+    </div>
+  </aside>
+
+  <!-- Main View -->
+  <main>
+    <!-- Desktop Topbar -->
+    <div class="top"><i></i>THÙNG RÁC THÔNG MINH</div>
+
+    <!-- Mobile Topbar (< 768px) -->
+    <header class="mobile-top-bar">
+      <h1 class="mobile-page-title">Lịch Sử</h1>
+      <button class="btn-user-avatar" aria-label="Tài khoản người dùng" title="Tài khoản cá nhân">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </button>
+    </header>
+    
+    <div class="wrap">
+
+      <!-- ===================================================================
+           A. DESKTOP VIEW (Bảng 5 cột & Phân trang đầy đủ)
+           =================================================================== -->
+      <div class="desktop-history-view">
+        <!-- Desktop Title & Total Badge -->
+        <div class="desktop-title-row">
+          <h1 class="desktop-h1">Lịch sử phân loại</h1>
+          <div class="total-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3" />
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+            </svg>
+            <span>Tổng số bản ghi:</span>
+            <b id="totalBadgeCount">86</b>
+          </div>
+        </div>
+
+        <!-- Desktop Filter Tabs Card -->
+        <section class="filter-card desktop-only-filter" role="tablist">
+          <button class="filter-btn all active" data-filter="ALL">Tất cả (86)</button>
+          <button class="filter-btn nhua" data-filter="NHỰA">Nhựa (38)</button>
+          <button class="filter-btn kim-loai" data-filter="KIM LOẠI">Kim loại (21)</button>
+          <button class="filter-btn huu-co" data-filter="HỮU CƠ">Hữu cơ (27)</button>
+        </section>
+
+        <!-- Desktop Main Table Card -->
+        <section class="card desktop-table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>
+                  <div class="th-content">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span>THỜI GIAN</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="5" r="2" />
+                      <circle cx="6" cy="19" r="2" />
+                      <circle cx="18" cy="19" r="2" />
+                      <line x1="12" y1="7" x2="6" y2="17" />
+                      <line x1="12" y1="7" x2="18" y2="17" />
+                    </svg>
+                    <span>LOẠI RÁC</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    <span>HÌNH ẢNH</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="9 12 11 14 15 10" />
+                    </svg>
+                    <span>TRẠNG THÁI</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    <span>ĐỘ TIN CẬY</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+        </section>
+
+        <!-- Desktop Pagination Card -->
+        <section class="desktop-pagination-card">
+          <div class="page-info">
+            Hiển thị <b id="pageStart">1</b> - <b id="pageEnd">6</b> trong số <b id="pageTotal">86</b> kết quả
+          </div>
+          <div class="pagination-nav" id="paginationControls"></div>
+        </section>
+      </div>
+
+      <!-- ===================================================================
+           B. MOBILE VIEW CONTAINER (Khớp 100% với ảnh mẫu smartphone)
+           =================================================================== -->
+      <div class="mobile-view-container">
+        <!-- Subhead: Icon + "Nhật ký phân loại" + Pill count -->
+        <div class="mobile-subhead">
+          <div class="subhead-title">
+            <div class="subhead-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 21h5v-5" />
+              </svg>
+            </div>
+            <h2>Nhật ký phân loại</h2>
+          </div>
+          <div class="subhead-count">
+            <span class="dot-green">●</span>
+            <span id="subheadCountText">5 / 128 MỤC</span>
+          </div>
+        </div>
+
+        <!-- Mobile Filter Tabs -->
+        <div class="mobile-filter-tabs" role="tablist">
+          <button class="filter-btn all active" data-filter="ALL">Tất cả (5)</button>
+          <button class="filter-btn nhua" data-filter="NHỰA">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
+              <path d="M11 19h8.2a1.8 1.8 0 0 0 1.565-.914 1.78 1.78 0 0 0 .009-1.771L17.2 10" />
+              <path d="m14 16 3 3-3 3" />
+              <path d="M8.2 5.5h7.6" />
+              <path d="m18 3-2 3.5 2 3.5" />
+              <path d="m6.5 9-2-3.5 3.5-2" />
+            </svg>
+            <span>Nhựa</span>
+          </button>
+          <button class="filter-btn kim-loai" data-filter="KIM LOẠI">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="3" width="16" height="18" rx="2" />
+              <path d="M8 7h8M8 12h8M8 17h4" />
+            </svg>
+            <span>Kim loại</span>
+          </button>
+          <button class="filter-btn huu-co" data-filter="HỮU CƠ">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 20A7 7 0 0 1 4 13C4 9.13 7.13 6 11 6c.55 0 1 .45 1 1v13Z" />
+              <path d="M13 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7-.55 0-1 .45-1 1v13Z" />
+              <path d="M12 6V2" />
+            </svg>
+            <span>Hữu cơ</span>
+          </button>
+        </div>
+
+        <!-- Mobile Column Header Labels -->
+        <div class="mobile-col-header">
+          <span>THỜI GIAN • VẬT THỂ AI NHẬN DIỆN</span>
+          <span>TRẠNG THÁI CHẤP HÀNH</span>
+        </div>
+
+        <!-- Mobile Cards List -->
+        <div class="mobile-cards-list" id="mobileCardsList">
+          <!-- Dynamically populated in lich-su.js -->
+        </div>
+
+        <!-- Load More Button -->
+        <button class="btn-load-more" id="btnLoadMore">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+          <span>[Tải thêm bản ghi]</span>
+        </button>
+
+        <!-- Footer Note -->
+        <div class="mobile-footer-note" id="mobileFooterNote">
+          HIỂN THỊ <span id="mobileShownCount">5</span> TRÊN <span id="mobileTotalCount">128</span> THAO TÁC CƠ KHÍ
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal for Snapshot Inspection -->
+  <div class="modal-backdrop" id="imageModal" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Ảnh chụp camera AI lúc phân loại</h3>
+        <button class="modal-close-btn" id="modalClose" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-preview-box">
+        <div class="cam-snapshot-frame">
+          <div class="cam-bounding-box" id="modalAiBox">
+            <div class="cam-tag-label" id="modalAiTag">
+              <span id="modalAiClass">plastic_bottle</span><br>
+              <span id="modalAiConf">96.4%</span>
+            </div>
+            <svg id="modalAiIcon" class="cam-icon-large" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M6 3h12l-1.5 16a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2L6 3Z" />
+              <path d="M6 8h12" />
+              <path d="M12 11c-1 1.5-2 2.5-2 3.5a2 2 0 0 0 4 0c0-1-1-2-2-3.5Z" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="modal-details">
+          <div class="modal-detail-row">
+            <span>VẬT THỂ:</span>
+            <b id="modalItemName">Chai nhựa</b>
+          </div>
+          <div class="modal-detail-row">
+            <span>PHÂN LOẠI:</span>
+            <b id="modalCategory">NHỰA (Ngăn 1)</b>
+          </div>
+          <div class="modal-detail-row">
+            <span>THỜI ĐIỂM:</span>
+            <b class="mono" id="modalTimestamp">10:24:15</b>
+          </div>
+          <div class="modal-detail-row">
+            <span>ĐỘ TIN CẬY:</span>
+            <b class="mono" id="modalConfidence">96.4% (CAO)</b>
+          </div>
+          <div class="modal-detail-row">
+            <span>KẾT QUẢ:</span>
+            <span class="pill-status" style="padding:2px 10px;font-size:11px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+              ĐÃ PHÂN LOẠI
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast" id="toast" role="status"></div>
+</body>
+
+</html>
