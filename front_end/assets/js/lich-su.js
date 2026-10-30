@@ -17,25 +17,12 @@
   // 5. Hộp thiếc      [KIM LOẠI] 09:40:30 • Cửa nạp #1  [✓ ĐÃ GẠT]
 
   var baseRecords = [
-    { time: '10:24:15', category: 'NHỰA', catKey: 'nhua', item: 'Chai nhựa PET', port: 'Cửa nạp #1', modelClass: 'plastic_bottle', conf: '96.4%', icon: 'bottle' },
-    { time: '10:18:02', category: 'KIM LOẠI', catKey: 'kim-loai', item: 'Lon nước ngọt', port: 'Cửa nạp #1', modelClass: 'can_metal', conf: '94.2%', icon: 'can' },
-    { time: '10:05:40', category: 'HỮU CƠ', catKey: 'huu-co', item: 'Vỏ chuối', port: 'Cửa nạp #2', modelClass: 'banana_peel', conf: '98.1%', icon: 'organic' },
-    { time: '09:52:11', category: 'NHỰA', catKey: 'nhua', item: 'Cốc dùng 1 lần', port: 'Cửa nạp #1', modelClass: 'plastic_cup', conf: '91.5%', icon: 'cup' },
-    { time: '09:40:30', category: 'KIM LOẠI', catKey: 'kim-loai', item: 'Hộp thiếc', port: 'Cửa nạp #1', modelClass: 'tin_box', conf: '95.8%', icon: 'box' },
-    { time: '09:25:14', category: 'HỮU CƠ', catKey: 'huu-co', item: 'Cuống táo & vỏ trái cây', port: 'Cửa nạp #2', modelClass: 'apple_core', conf: '97.3%', icon: 'organic' }
-  ];
-
-  var extraNhua = [
-    'Chai nước khoáng', 'Ống hút nhựa', 'Màng bọc thực phẩm', 'Khay nhựa định hình',
-    'Thìa nhựa dùng 1 lần', 'Nắp cốc cà phê', 'Vỏ chai dầu gội', 'Chai tương ớt nhựa'
-  ];
-  var extraKimLoai = [
-    'Lon bia 333', 'Vỏ hộp cá hộp', 'Đinh gỉ & ốc vít', 'Miếng thiếc vụn',
-    'Nắp chai kim loại', 'Đế nến nhôm', 'Kẹp giấy kim loại', 'Nắp lon nước yến'
-  ];
-  var extraHuuCo = [
-    'Lá xà lách dập', 'Bã trà túi lọc', 'Vỏ cam tươi', 'Cuống cà chua',
-    'Vỏ trứng gà vụn', 'Bã cà phê rang', 'Mẩu bánh mì khô', 'Lõi ngô thừa'
+    { time: '10:24:15', category: 'NHỰA', catKey: 'nhua', port: 'Cửa nạp #1', modelClass: 'plastic_bottle', conf: '96.4%', icon: 'bottle' },
+    { time: '10:18:02', category: 'KIM LOẠI', catKey: 'kim-loai', port: 'Cửa nạp #1', modelClass: 'can_metal', conf: '94.2%', icon: 'can' },
+    { time: '10:05:40', category: 'HỮU CƠ', catKey: 'huu-co', port: 'Cửa nạp #2', modelClass: 'banana_peel', conf: '98.1%', icon: 'organic' },
+    { time: '09:52:11', category: 'NHỰA', catKey: 'nhua', port: 'Cửa nạp #1', modelClass: 'plastic_cup', conf: '91.5%', icon: 'cup' },
+    { time: '09:40:30', category: 'KIM LOẠI', catKey: 'kim-loai', port: 'Cửa nạp #1', modelClass: 'tin_box', conf: '95.8%', icon: 'box' },
+    { time: '09:25:14', category: 'HỮU CƠ', catKey: 'huu-co', port: 'Cửa nạp #2', modelClass: 'apple_core', conf: '97.3%', icon: 'organic' }
   ];
 
   // Khởi tạo dataset 128 bản ghi (phù hợp với ghi chú "128 THAO TÁC CƠ KHÍ" trên mobile)
@@ -55,39 +42,33 @@
     var rand = Math.random();
 
     if (rand < 0.45) {
-      var itemN = extraNhua[idxN % extraNhua.length];
       idxN++;
       fullDataset.push({
         time: timeStr,
         category: 'NHỰA',
         catKey: 'nhua',
-        item: itemN,
         port: 'Cửa nạp #1',
         modelClass: 'plastic_' + (idxN % 6),
         conf: (90 + Math.random() * 8).toFixed(1) + '%',
         icon: idxN % 2 === 0 ? 'bottle' : 'cup'
       });
     } else if (rand < 0.72) {
-      var itemK = extraKimLoai[idxK % extraKimLoai.length];
       idxK++;
       fullDataset.push({
         time: timeStr,
         category: 'KIM LOẠI',
         catKey: 'kim-loai',
-        item: itemK,
         port: 'Cửa nạp #1',
         modelClass: 'metal_' + (idxK % 5),
         conf: (91 + Math.random() * 7).toFixed(1) + '%',
         icon: idxK % 2 === 0 ? 'can' : 'box'
       });
     } else {
-      var itemH = extraHuuCo[idxH % extraHuuCo.length];
       idxH++;
       fullDataset.push({
         time: timeStr,
         category: 'HỮU CƠ',
         catKey: 'huu-co',
-        item: itemH,
         port: 'Cửa nạp #2',
         modelClass: 'organic_' + (idxH % 5),
         conf: (92 + Math.random() * 7).toFixed(1) + '%',
@@ -238,7 +219,7 @@
           '</div>' +
           '<div class="card-info">' +
             '<div class="card-name-row">' +
-              '<span class="card-item-name">' + row.item + '</span>' +
+              '<span class="card-item-name">' + (row.category === 'NHỰA' ? 'Rác Nhựa' : (row.category === 'KIM LOẠI' ? 'Rác Kim loại' : 'Rác Hữu cơ')) + '</span>' +
               '<span class="cat-tag ' + row.catKey + '">' + row.category + '</span>' +
             '</div>' +
             '<div class="card-meta">' +
@@ -308,9 +289,6 @@
     if (modalAiTag) modalAiTag.style.background = col.tagBg;
     if (modalAiBox) modalAiBox.style.borderColor = col.stroke;
     if (modalAiIcon) modalAiIcon.style.stroke = col.stroke;
-
-    var modalItemName = $('modalItemName');
-    if (modalItemName) modalItemName.textContent = item.item;
 
     var modalCategory = $('modalCategory');
     if (modalCategory) modalCategory.textContent = item.category + ' (' + item.port + ')';
