@@ -11,63 +11,59 @@
 
   // Dữ liệu 4 hoạt động gần nhất (khớp chính xác với giao diện ảnh mẫu)
   var recentActivities = [
-    {
-      time: '10:24:15',
-      item: 'Chai nhựa',
-      category: 'NHỰA',
-      catKey: 'pl',
-      confidence: '96.4%',
-      confVal: 96.4,
-      status: 'Thành công',
-      modelClass: 'plastic_bottle',
-      iconType: 'bottle'
-    },
-    {
-      time: '10:18:02',
-      item: 'Vỏ lon nhôm',
-      category: 'KIM LOẠI',
-      catKey: 'me',
-      confidence: '94.2%',
-      confVal: 94.2,
-      status: 'Thành công',
-      modelClass: 'can_metal',
-      iconType: 'can'
-    },
-    {
-      time: '10:05:40',
-      item: 'Vỏ chuối',
-      category: 'HỮU CƠ',
-      catKey: 'or',
-      confidence: '98.1%',
-      confVal: 98.1,
-      status: 'Thành công',
-      modelClass: 'banana_peel',
-      iconType: 'organic'
-    },
-    {
-      time: '09:52:11',
-      item: 'Hộp sữa giấy ép',
-      category: 'NHỰA',
-      catKey: 'pl',
-      confidence: '91.5%',
-      confVal: 91.5,
-      status: 'Thành công',
-      modelClass: 'milk_box',
-      iconType: 'box'
-    }
-  ];
+  {
+    time: '10:24:15',
+    category: 'NHỰA',
+    catKey: 'pl',
+    confidence: '96.4%',
+    confVal: 96.4,
+    status: 'Thành công',
+    modelClass: 'plastic_bottle',
+    iconType: 'bottle'
+  },
+  {
+    time: '10:18:02',
+    category: 'KIM LOẠI',
+    catKey: 'me',
+    confidence: '94.2%',
+    confVal: 94.2,
+    status: 'Thành công',
+    modelClass: 'can_metal',
+    iconType: 'can'
+  },
+  {
+    time: '10:05:40',
+    category: 'HỮU CƠ',
+    catKey: 'or',
+    confidence: '98.1%',
+    confVal: 98.1,
+    status: 'Thành công',
+    modelClass: 'banana_peel',
+    iconType: 'organic'
+  },
+  {
+    time: '09:52:11',
+    category: 'NHỰA',
+    catKey: 'pl',
+    confidence: '91.5%',
+    confVal: 91.5,
+    status: 'Thành công',
+    modelClass: 'milk_box',
+    iconType: 'box'
+  }
+];
 
-  // Danh sách mở rộng mô phỏng các hoạt động trước đó
-  var extendedActivities = [
-    { time: '09:35:04', item: 'Ly nhựa trà sữa', category: 'NHỰA', catKey: 'pl', confidence: '97.2%', status: 'Thành công', modelClass: 'plastic_cup', iconType: 'bottle' },
-    { time: '09:20:18', item: 'Nắp lon nước ngọt', category: 'KIM LOẠI', catKey: 'me', confidence: '92.0%', status: 'Thành công', modelClass: 'metal_cap', iconType: 'can' },
-    { time: '09:05:45', item: 'Cuống táo', category: 'HỮU CƠ', catKey: 'or', confidence: '95.6%', status: 'Thành công', modelClass: 'apple_core', iconType: 'organic' },
-    { time: '08:50:12', item: 'Ống hút nhựa', category: 'NHỰA', catKey: 'pl', confidence: '89.4%', status: 'Thành công', modelClass: 'plastic_straw', iconType: 'bottle' },
-    { time: '08:42:30', item: 'Lon cà phê sữa', category: 'KIM LOẠI', catKey: 'me', confidence: '95.1%', status: 'Thành công', modelClass: 'can_metal', iconType: 'can' },
-    { time: '08:30:15', item: 'Lá rau thừa', category: 'HỮU CƠ', catKey: 'or', confidence: '94.8%', status: 'Thành công', modelClass: 'vegetable_scrap', iconType: 'organic' },
-    { time: '08:15:22', item: 'Chai nước khoáng', category: 'NHỰA', catKey: 'pl', confidence: '98.3%', status: 'Thành công', modelClass: 'plastic_bottle', iconType: 'bottle' },
-    { time: '08:02:40', item: 'Vỏ hộp thiếc', category: 'KIM LOẠI', catKey: 'me', confidence: '93.7%', status: 'Thành công', modelClass: 'tin_can', iconType: 'can' }
-  ];
+// Danh sách mở rộng mô phỏng các hoạt động trước đó
+var extendedActivities = [
+  { time: '09:35:04', category: 'NHỰA', catKey: 'pl', confidence: '97.2%', status: 'Thành công', modelClass: 'plastic_cup', iconType: 'bottle' },
+  { time: '09:20:18', category: 'KIM LOẠI', catKey: 'me', confidence: '92.0%', status: 'Thành công', modelClass: 'metal_cap', iconType: 'can' },
+  { time: '09:05:45', category: 'HỮU CƠ', catKey: 'or', confidence: '95.6%', status: 'Thành công', modelClass: 'apple_core', iconType: 'organic' },
+  { time: '08:50:12', category: 'NHỰA', catKey: 'pl', confidence: '89.4%', status: 'Thành công', modelClass: 'plastic_straw', iconType: 'bottle' },
+  { time: '08:42:30', category: 'KIM LOẠI', catKey: 'me', confidence: '95.1%', status: 'Thành công', modelClass: 'can_metal', iconType: 'can' },
+  { time: '08:30:15', category: 'HỮU CƠ', catKey: 'or', confidence: '94.8%', status: 'Thành công', modelClass: 'vegetable_scrap', iconType: 'organic' },
+  { time: '08:15:22', category: 'NHỰA', catKey: 'pl', confidence: '98.3%', status: 'Thành công', modelClass: 'plastic_bottle', iconType: 'bottle' },
+  { time: '08:02:40', category: 'KIM LOẠI', catKey: 'me', confidence: '93.7%', status: 'Thành công', modelClass: 'tin_can', iconType: 'can' }
+];
 
   var allActivities = recentActivities.concat(extendedActivities);
 
@@ -106,7 +102,6 @@
     recentActivities.forEach(function (act, index) {
       html += '<tr data-index="' + index + '">' +
         '<td class="mono"><b>' + act.time + '</b></td>' +
-        '<td>' + act.item + '</td>' +
         '<td><span class="badge-pill ' + act.catKey + '">' + act.category + '</span></td>' +
         '<td><span class="status-badge-ok">' + act.status + '</span></td>' +
         '</tr>';
@@ -161,11 +156,10 @@
    * Xuất log CSV hoạt động
    */
   function exportCsvLog() {
-    var csvHeader = 'Thoi_gian,Vat_the,Phan_loai,Do_tin_cay,Trang_thai\n';
+    var csvHeader = 'Thoi_gian,Phan_loai,Do_tin_cay,Trang_thai\n';
     var csvRows = allActivities.map(function (row) {
       return [
         '"' + row.time + '"',
-        '"' + row.item + '"',
         '"' + row.category + '"',
         '"' + row.confidence + '"',
         '"' + row.status + '"'
@@ -196,13 +190,12 @@
     items.forEach(function (act) {
       html += '<tr>' +
         '<td class="mono"><b>' + act.time + '</b></td>' +
-        '<td>' + act.item + '</td>' +
         '<td><span class="badge-pill ' + act.catKey + '">' + act.category + '</span></td>' +
         '<td class="mono">' + act.confidence + '</td>' +
         '<td><span class="status-badge-ok">' + act.status + '</span></td>' +
         '</tr>';
     });
-    tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:var(--mut);padding:24px;">Không tìm thấy kết quả phù hợp.</td></tr>';
+    tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--mut);padding:24px;">Không tìm thấy kết quả phù hợp.</td></tr>';
   }
 
   function applyModalFilter() {
@@ -214,7 +207,7 @@
     var cat = filterCategory.value;
 
     var filtered = allActivities.filter(function (x) {
-      var matchText = x.item.toLowerCase().indexOf(q) !== -1 || x.time.indexOf(q) !== -1;
+      var matchText = x.category.toLowerCase().indexOf(q) !== -1 || x.time.indexOf(q) !== -1;
       var matchCat = cat === 'ALL' || x.category === cat;
       return matchText && matchCat;
     });
@@ -236,7 +229,7 @@
         var act = recentActivities[idx];
         if (act) {
           displayDetection(act);
-          notify('Đang hiển thị kết quả: ' + act.item);
+          notify('Đang hiển thị kết quả phân loại: ' + act.category);
         }
       });
     }
