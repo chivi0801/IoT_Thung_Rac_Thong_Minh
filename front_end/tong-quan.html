@@ -17,10 +17,12 @@
   <link rel="stylesheet" href="assets/css/common.css">
   <link rel="stylesheet" href="assets/css/sidebar.css">
   <link rel="stylesheet" href="assets/css/tong-quan.css">
+  <link rel="stylesheet" href="assets/css/esp32-connect.css">
 
   <!-- Scripts -->
   <script src="assets/js/common.js" defer></script>
   <script src="assets/js/sidebar.js" defer></script>
+  <script src="assets/js/esp32-connect.js" defer></script>
   <script src="assets/js/tong-quan.js" defer></script>
 </head>
 
@@ -66,7 +68,7 @@
           <span class="mobile-label">Phân loại</span>
         </span>
       </a>
-      <a href="lich-su.html" data-page="lich-su">
+            <a href="lich-su.html" data-page="lich-su">
         <span class="nav-icon-wrap">
           <svg viewBox="0 0 24 24">
             <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
@@ -75,7 +77,27 @@
         </span>
         <span class="nav-text">Lịch sử</span>
       </a>
+      <a href="doi-thuong.html" data-page="doi-thuong">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 12 20 22 4 22 4 12" />
+            <rect x="2" y="7" width="20" height="5" />
+            <line x1="12" y1="22" x2="12" y2="7" />
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+          </svg>
+        </span>
+        <span class="nav-text">Đổi thưởng</span>
+      </a>
     </nav>
+
+    <div class="portal-link-box">
+      <a href="tich-diem.html" class="portal-btn-link" title="Mở Cổng Sinh Viên Tích Điểm">
+        <span class="portal-indicator-dot"></span>
+        <span class="portal-link-text">Cổng Sinh Viên</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
     
     <div class="hw">
       <div><span>PHẦN CỨNG</span><span class="chip">ESP32-S3</span></div>
@@ -91,12 +113,12 @@
     <!-- Mobile Topbar (< 768px) -->
     <header class="mobile-top-bar">
       <h1 class="mobile-page-title">Tổng Quan</h1>
-      <button class="btn-user-avatar" aria-label="Tài khoản người dùng" title="Tài khoản cá nhân">
+      <a href="tich-diem.html" class="btn-user-avatar" aria-label="Tài khoản người dùng" title="Tài khoản cá nhân">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
-      </button>
+      </a>
     </header>
     
     <div class="wrap">
@@ -364,7 +386,7 @@
         <!-- 3. Trio of Mini KPI Cards (Nhựa, Kim loại, Hữu cơ) -->
         <section class="m-kpi-trio">
           <!-- Nhựa -->
-          <a href="ThietBi.html" class="m-kpi-box box-nhua" title="Xem ngăn Nhựa số 1">
+          <a href="thiet-bi.html" class="m-kpi-box box-nhua" title="Xem ngăn Nhựa số 1">
             <div class="m-box-icon pl">
               <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18" />
@@ -378,7 +400,7 @@
           </a>
 
           <!-- Kim loại -->
-          <a href="ThietBi.html" class="m-kpi-box box-kim-loai" title="Xem ngăn Kim loại số 2">
+          <a href="thiet-bi.html" class="m-kpi-box box-kim-loai" title="Xem ngăn Kim loại số 2">
             <div class="m-box-icon me">
               <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="4" y="3" width="16" height="18" rx="2" />
@@ -391,7 +413,7 @@
           </a>
 
           <!-- Hữu cơ -->
-          <a href="ThietBi.html" class="m-kpi-box box-huu-co" title="Xem ngăn Hữu cơ số 3">
+          <a href="thiet-bi.html" class="m-kpi-box box-huu-co" title="Xem ngăn Hữu cơ số 3">
             <div class="m-box-icon or">
               <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 20A7 7 0 0 1 4 13C4 9.13 7.13 6 11 6c.55 0 1 .45 1 1v13Z" />
@@ -556,6 +578,95 @@
             <tbody id="modalTableBody"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cấu hình Kết nối ESP32 -->
+  <div class="modal-backdrop" id="modalEspConnect" role="dialog" aria-modal="true">
+    <div class="modal-dialog-esp">
+      <div class="modal-header-esp">
+        <h3>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="13" width="20" height="8" rx="2" />
+            <path d="M6 13V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5" />
+            <line x1="12" y1="6" x2="12" y2="2" />
+          </svg>
+          Kết nối Vi điều khiển ESP32-S3
+        </h3>
+        <button class="modal-close-btn btn-close-esp-modal" id="modalEspClose" aria-label="Đóng">&times;</button>
+      </div>
+
+      <div class="esp-status-row" style="margin-bottom: 14px;">
+        <span class="esp-status-badge connected">
+          <span class="esp-pulse-dot"></span> ĐÃ KẾT NỐI (ESP32-S3)
+        </span>
+      </div>
+
+      <div class="esp-connect-grid">
+        <div class="esp-form-group">
+          <label for="espProtocol">Giao thức kết nối</label>
+          <select id="espProtocol" class="esp-select">
+            <option value="ws">WebSocket (ws://) – Telemetry thời gian thực</option>
+            <option value="http">HTTP REST API (http://)</option>
+            <option value="mqtt">MQTT Broker (tcp://)</option>
+            <option value="serial">Web Serial (UART / USB COM)</option>
+          </select>
+        </div>
+
+        <div class="esp-row-dual">
+          <div class="esp-form-group">
+            <label for="espHost">Địa chỉ IP / Host ESP32</label>
+            <input type="text" id="espHost" class="esp-input" value="192.168.1.105">
+          </div>
+          <div class="esp-form-group">
+            <label for="espPort">Cổng (Port)</label>
+            <input type="text" id="espPort" class="esp-input" value="81">
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Telemetry Metrics Row -->
+      <div class="esp-metrics-row">
+        <div class="esp-metric-item">
+          <div class="esp-metric-label">Độ trễ Ping</div>
+          <div class="esp-metric-val" id="espPing">18 ms</div>
+        </div>
+        <div class="esp-metric-item">
+          <div class="esp-metric-label">Sóng WiFi</div>
+          <div class="esp-metric-val" id="espRssi">-54 dBm</div>
+        </div>
+        <div class="esp-metric-item">
+          <div class="esp-metric-label">Gói tin Rx/Tx</div>
+          <div class="esp-metric-val" id="espPackets">1,420 / 980</div>
+        </div>
+        <div class="esp-metric-item">
+          <div class="esp-metric-label">RAM Heap</div>
+          <div class="esp-metric-val" id="espHeap">124 KB</div>
+        </div>
+      </div>
+
+      <!-- Terminal Console Box -->
+      <div class="esp-console-wrapper">
+        <div class="esp-console-header">
+          <span>NHẬT KÝ TRUYỀN NHẬN (SERIAL / WEBSOCKET LOG)</span>
+          <button type="button" id="btnClearEspLog" style="background:transparent;border:0;color:var(--mut);cursor:pointer;font-size:11px;">[Xóa log]</button>
+        </div>
+        <div class="esp-console-box">
+          <div class="esp-log-line"><span class="esp-log-time">[10:24:12]</span><span class="esp-log-tag">[SYSTEM]</span> Khởi tạo kết nối WebSocket ws://192.168.1.105:81/ws...</div>
+          <div class="esp-log-line"><span class="esp-log-time">[10:24:13]</span><span class="esp-log-tag">[ESP32-S3]</span> Bắt tay thành công (Handshake OK). Chip: ESP32-S3-WROOM-1</div>
+          <div class="esp-log-line"><span class="esp-log-time">[10:24:15]</span><span class="esp-log-tag">[SENSOR]</span> Cảm biến quang điện kích hoạt: Cửa nạp #1</div>
+          <div class="esp-log-line"><span class="esp-log-time">[10:24:16]</span><span class="esp-log-tag">[CAMERA]</span> OV2640 hoàn tất gửi khung hình 240x240</div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="esp-actions">
+        <button type="button" class="btn btn-disconnect btn-esp-toggle">Ngắt kết nối</button>
+        <button type="button" class="btn ghost" id="btnPingEsp">Kiểm tra Ping</button>
+        <label class="esp-auto-check">
+          <input type="checkbox" id="espAutoReconnect" checked> Tự động kết nối lại
+        </label>
       </div>
     </div>
   </div>

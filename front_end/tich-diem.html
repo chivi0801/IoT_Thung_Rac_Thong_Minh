@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cổng Sinh Viên – Tích Điểm Đổi Quà – Thùng rác thông minh</title>
+
+  <!-- Typography Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/tich-diem.css">
+
+  <!-- Scripts -->
+  <script src="assets/js/common.js" defer></script>
+  <script src="assets/js/tich-diem.js" defer></script>
+</head>
+
+<body class="portal-page">
+  <div class="portal-container">
+
+    <!-- 1. PORTAL TOP BAR -->
+    <header class="portal-top-bar">
+      <div class="portal-brand">
+        <div class="portal-brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <div class="portal-brand-text">
+          <h2>CỔNG SINH VIÊN – TÍCH ĐIỂM XANH</h2>
+          <p>Hệ thống Thùng Rác Thông Minh Phân Loại Rác Bằng AI Vision</p>
+        </div>
+      </div>
+
+      <div class="portal-header-actions">
+        <a href="tong-quan.html" class="btn-to-admin" title="Chuyển sang trang Quản trị">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          <span>Trang Quản Trị Hệ Thống</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- 2. HERO GRID: QUÉT THẺ (TRÁI) & TỔNG ĐIỂM (PHẢI) -->
+    <div class="portal-hero-grid">
+
+      <!-- CỘT TRÁI: QUÉT NHẬN DIỆN THẺ SINH VIÊN -->
+      <section class="portal-card">
+        <div class="portal-card-head">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="3" />
+              <circle cx="9" cy="10" r="2" />
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+            </svg>
+            Quét Thẻ Sinh Viên
+          </h3>
+          <span class="portal-reward-badge">+10 Điểm / Lần nạp rác</span>
+        </div>
+
+        <!-- Drag & Drop Zone -->
+        <div class="student-drop-zone" id="studentDropZone">
+          <input type="file" id="studentFileInput" class="student-file-input" accept="image/*" style="display:none">
+
+          <div class="drop-icon-circle">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+          </div>
+
+          <div class="drop-main-text">Thả ảnh thẻ sinh viên hoặc chạm để chụp</div>
+          <div class="drop-sub-text">Hỗ trợ nhận diện AI OCR tự động trích xuất MSSV & Họ tên</div>
+          <button type="button" class="btn-upload-file" id="btnUploadFile">Chọn ảnh thẻ từ thiết bị</button>
+
+          <!-- Laser Scan Preview -->
+          <div class="drop-preview-container" id="dropPreviewContainer">
+            <img class="drop-preview-img" id="dropPreviewImg" src="" alt="Ảnh thẻ sinh viên">
+            <div class="scan-laser-line" id="scanLaserLine"></div>
+            <div class="scan-status-overlay" id="scanStatusOverlay" style="display:none">Đang nhận diện Thẻ Sinh Viên...</div>
+          </div>
+        </div>
+
+        <!-- Thông tin thẻ sau khi nhận diện -->
+        <div class="student-id-badge-view">
+          <div class="student-badge-header">
+            <div class="student-avatar-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <h4 class="st-val-name">Nguyễn Văn An</h4>
+              <span class="st-val-mssv">MSSV: 21120489</span>
+            </div>
+          </div>
+
+          <div class="student-info-rows">
+            <div class="st-row"><span>Khoa / Viện:</span><b class="st-val-dept">Khoa Công nghệ Thông tin</b></div>
+            <div class="st-row"><span>Lớp sinh hoạt:</span><b class="st-val-class">K45-CNTT1</b></div>
+            <div class="st-row"><span>Danh hiệu xanh:</span><b class="st-val-rank">Chiến Binh Xanh (Cấp 3)</b></div>
+          </div>
+
+          <div class="student-actions">
+            <button type="button" class="btn-confirm-reward">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Xác nhận tích điểm (+10đ)
+            </button>
+            <button type="button" class="btn-reset-drop">Quét thẻ khác</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CỘT PHẢI: TỔNG ĐIỂM & TIẾN TRÌNH HẠNG -->
+      <section class="portal-card">
+        <div class="portal-card-head">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="7" />
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+            </svg>
+            Điểm Tích Lũy Của Bạn
+          </h3>
+          <span style="font-size:12px;color:var(--mut);">Cập nhật tức thì</span>
+        </div>
+
+        <!-- Hộp số điểm to -->
+        <div class="points-giant-box">
+          <div class="points-giant-label">TỔNG ĐIỂM XANH HIỆN CÓ</div>
+          <div class="points-giant-val"><span class="st-val-total-points">135</span> <small>điểm</small></div>
+          <div class="points-rank-tag">
+            <span>🌿</span>
+            <span class="st-val-rank">Chiến Binh Xanh (Cấp 3)</span>
+          </div>
+        </div>
+
+        <!-- Tiến trình lên hạng -->
+        <div class="rank-progress-box">
+          <div class="rank-progress-top">
+            <span>Tiến trình nâng hạng tiếp theo:</span>
+            <b class="mono" id="rankProgressPct">68%</b>
+          </div>
+          <div class="rank-progress-bar">
+            <div class="rank-progress-fill" id="rankProgressFill" style="width: 68%;"></div>
+          </div>
+          <div class="rank-next-tip" id="rankNextTip">Tích thêm 65 điểm để đạt Đại Sứ Môi Trường (Cấp 4)</div>
+        </div>
+
+        <!-- Thông báo rác vừa nạp -->
+        <div class="recent-trash-alert">
+          <div class="trash-alert-icon">♻️</div>
+          <div class="trash-alert-text">
+            Cảm biến nhận diện: <b>Chai nhựa PET</b> vừa nạp vào Ngăn 1. Bấm <b>"Xác nhận tích điểm"</b> để nhận +10 điểm vào tài khoản của bạn!
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 3. BOTTOM SECTION: TABS ĐỔI QUÀ & LỊCH SỬ THU THẬP -->
+    <section class="portal-card">
+      <div class="portal-tabs-nav">
+        <button type="button" class="tab-btn active" data-tab="tabGifts">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 12 20 22 4 22 4 12" />
+            <rect x="2" y="7" width="20" height="5" />
+            <line x1="12" y1="22" x2="12" y2="7" />
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+          </svg>
+          Đổi Quà Thưởng
+        </button>
+
+        <button type="button" class="tab-btn" data-tab="tabHistory">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          Lịch Sử Thu Thập Rác Của Bạn
+        </button>
+      </div>
+
+      <!-- TAB 1: DANH MỤC PHẦN QUÀ CHO SINH VIÊN -->
+      <div class="tab-content active" id="tabGifts">
+        <div class="student-gifts-grid" id="studentGiftsGrid">
+          <!-- Rendered dynamically by tich-diem.js -->
+        </div>
+      </div>
+
+      <!-- TAB 2: LỊCH SỬ THU THẬP RÁC CỦA SINH VIÊN -->
+      <div class="tab-content" id="tabHistory">
+        <div class="student-history-list" id="studentHistoryList">
+          <!-- Rendered dynamically by tich-diem.js -->
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Modal Phiếu Nhận Quà (Voucher) -->
+  <div class="modal-backdrop" id="modalVoucher" role="dialog" aria-modal="true">
+    <div class="modal-voucher-dialog">
+      <div class="voucher-success-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+
+      <h3 style="font-size:20px; font-weight:800; color:var(--pri); margin:0 0 6px;">Đổi Quà Thành Công!</h3>
+      <p style="font-size:13px; color:var(--mut); margin:0;" id="voucherStudentName">Nguyễn Văn An (21120489)</p>
+
+      <div class="voucher-code-card">
+        <div style="font-size:12px; font-weight:700; color:var(--mut); margin-bottom:4px;">MÃ PHIẾU ĐỔI QUÀ:</div>
+        <div class="voucher-code-val" id="voucherCodeText">ECO-8924</div>
+        <div class="voucher-qr-fake">🏁</div>
+        <div style="font-size:13.5px; font-weight:700; color:var(--tx);" id="voucherGiftName">Voucher Căn tin 20.000đ</div>
+      </div>
+
+      <p style="font-size:12px; color:var(--mut); line-height:1.5; margin:10px 0 18px;">
+        Vui lòng chụp màn hình hoặc lưu mã phiếu này để xuất trình tại quầy Căn tin hoặc Văn phòng Đoàn trường để nhận quà.
+      </p>
+
+      <button type="button" class="btn" id="btnCloseVoucher" style="width:100%; padding:10px;">
+        Đã hiểu, đóng thông báo
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast" id="toast" role="status"></div>
+</body>
+
+</html>
+

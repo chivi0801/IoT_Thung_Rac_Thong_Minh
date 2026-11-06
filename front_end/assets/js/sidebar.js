@@ -59,7 +59,26 @@
     '    </span>\n' +
     '    <span class="nav-text">Lịch sử</span>\n' +
     '  </a>\n' +
+    '  <a href="doi-thuong.html" data-page="doi-thuong">\n' +
+    '    <span class="nav-icon-wrap">\n' +
+    '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n' +
+    '        <polyline points="20 12 20 22 4 22 4 12" />\n' +
+    '        <rect x="2" y="7" width="20" height="5" />\n' +
+    '        <line x1="12" y1="22" x2="12" y2="7" />\n' +
+    '        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />\n' +
+    '        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />\n' +
+    '      </svg>\n' +
+    '    </span>\n' +
+    '    <span class="nav-text">Đổi thưởng</span>\n' +
+    '  </a>\n' +
     '</nav>\n' +
+    '<div class="portal-link-box">\n' +
+    '  <a href="tich-diem.html" class="portal-btn-link" title="Mở Cổng Sinh Viên Tích Điểm">\n' +
+    '    <span class="portal-indicator-dot"></span>\n' +
+    '    <span class="portal-link-text">Cổng Sinh Viên</span>\n' +
+    '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>\n' +
+    '  </a>\n' +
+    '</div>\n' +
     '<div class="hw">\n' +
     '  <div><span>PHẦN CỨNG</span><span class="chip">ESP32-S3</span></div>\n' +
     '  <div><span>TRẠNG THÁI</span><span class="on-t" id="sideOn">ONLINE</span></div>\n' +

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Thiết lập Điểm Quy đổi & Quà tặng – Thùng rác thông minh</title>
+  
+  <!-- Typography Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/sidebar.css">
+  <link rel="stylesheet" href="assets/css/doi-thuong.css">
+  <link rel="stylesheet" href="assets/css/esp32-connect.css">
+
+  <!-- Scripts -->
+  <script src="assets/js/common.js" defer></script>
+  <script src="assets/js/sidebar.js" defer></script>
+  <script src="assets/js/esp32-connect.js" defer></script>
+  <script src="assets/js/doi-thuong.js" defer></script>
+</head>
+
+<body>
+  <!-- Sidebar Navigation (Desktop sidebar & Mobile bottom tab bar) -->
+  <aside id="sidebar-container" class="sidebar-container" aria-label="Menu điều hướng hệ thống">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <path d="M9 9h6v6H9zM2 9h2M2 15h2M20 9h2M20 15h2" />
+        </svg>
+      </div>
+      <div><b>IoT System</b><span>Smart Waste Bin</span></div>
+    </div>
+    
+    <div class="navlabel">ĐIỀU HƯỚNG</div>
+    <nav>
+      <a href="tong-quan.html" data-page="tong-quan">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+        </span>
+        <span class="nav-text">Tổng quan</span>
+      </a>
+      <a href="thiet-bi.html" data-page="thiet-bi">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
+            <path d="M11 19h8.2a1.8 1.8 0 0 0 1.565-.914 1.78 1.78 0 0 0 .009-1.771L17.2 10" />
+            <path d="m14 16 3 3-3 3" />
+            <path d="M8.2 5.5h7.6" />
+            <path d="m18 3-2 3.5 2 3.5" />
+            <path d="m6.5 9-2-3.5 3.5-2" />
+          </svg>
+        </span>
+        <span class="nav-text">
+          <span class="desktop-label">Thiết bị</span>
+          <span class="mobile-label">Phân loại</span>
+        </span>
+      </a>
+      <a href="lich-su.html" data-page="lich-su">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+            <path d="M3 3v5h5M12 7v5l3 2" />
+          </svg>
+        </span>
+        <span class="nav-text">Lịch sử</span>
+      </a>
+      <a href="doi-thuong.html" data-page="doi-thuong" class="on" aria-current="page">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 12 20 22 4 22 4 12" />
+            <rect x="2" y="7" width="20" height="5" />
+            <line x1="12" y1="22" x2="12" y2="7" />
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+          </svg>
+        </span>
+        <span class="nav-text">Đổi thưởng</span>
+      </a>
+    </nav>
+
+    <div class="portal-link-box">
+      <a href="tich-diem.html" class="portal-btn-link" title="Mở Cổng Sinh Viên Tích Điểm">
+        <span class="portal-indicator-dot"></span>
+        <span class="portal-link-text">Cổng Sinh Viên</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+    
+    <div class="hw">
+      <div><span>PHẦN CỨNG</span><span class="chip">ESP32-S3</span></div>
+      <div><span>TRẠNG THÁI</span><span class="on-t" id="sideOn">ONLINE</span></div>
+    </div>
+  </aside>
+
+  <!-- Main View -->
+  <main>
+    <!-- Desktop Topbar -->
+    <div class="top"><i></i>THÙNG RÁC THÔNG MINH</div>
+
+    <!-- Mobile Topbar (< 768px) -->
+    <header class="mobile-top-bar">
+      <h1 class="mobile-page-title">Đổi Thưởng</h1>
+      <a href="tich-diem.html" class="btn-user-avatar" aria-label="Cổng sinh viên tích điểm" title="Mở Cổng sinh viên tích điểm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </a>
+    </header>
+    
+    <div class="wrap">
+      <!-- Title & Quick Stats Banner -->
+      <div class="reward-admin-header">
+        <div>
+          <h1 class="desktop-h1" style="margin-bottom: 4px;">Thiết lập Điểm & Quà tặng</h1>
+          <p style="font-size: 13px; color: var(--mut); margin: 0;">Quản lý tỷ lệ điểm thưởng phân loại rác và danh mục quà tặng cho sinh viên</p>
+        </div>
+        <div class="reward-stats-pills">
+          <span class="stat-pill">Quà đang mở: <b id="statActiveGifts">5</b></span>
+          <span class="stat-pill">Tổng lượt đổi: <b id="statTotalRedemptions">3</b></span>
+          <a href="tich-diem.html" class="stat-pill" style="color:var(--ok); text-decoration:none; border-color:#a7f3d0; background:#f0fdf4;" title="Mở Cổng Sinh Viên để trải nghiệm">
+            <span>↗ Xem Cổng Sinh Viên</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           1. KHỐI THIẾT LẬP ĐIỂM QUY ĐỔI CHO TỪNG LOẠI RÁC
+           =================================================================== -->
+      <section class="card">
+        <div class="ctitle">
+          <span>[1. QUY TẮC CỘNG ĐIỂM THEO LOẠI RÁC]</span>
+          <span class="badge" style="background:#e3f8ef;color:#059669;font-weight:700;">● ĐANG ÁP DỤNG</span>
+        </div>
+
+        <div class="rate-config-grid">
+          <!-- Rate Card: Nhựa -->
+          <div class="rate-item-card plastic">
+            <div class="rate-card-top">
+              <div class="rate-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 3h12l-1.5 16a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2L6 3Z" />
+                  <path d="M6 8h12" />
+                </svg>
+              </div>
+              <div>
+                <div class="rate-card-title">Nhựa Tái Chế (PET / PP)</div>
+                <div class="rate-card-sub">Ngăn nạp số 1</div>
+              </div>
+            </div>
+
+            <div class="rate-input-group">
+              <label for="ratePlastic">Điểm thưởng mỗi lần bỏ rác đúng:</label>
+              <div class="rate-input-wrap">
+                <input type="number" id="ratePlastic" min="1" max="100" value="10">
+                <span class="rate-unit">điểm / vật phẩm</span>
+              </div>
+            </div>
+            <div class="rate-desc">Áp dụng cho chai nước suối, ly nhựa dùng 1 lần, hộp nhựa PP khi AI Vision nhận diện chính xác.</div>
+          </div>
+
+          <!-- Rate Card: Kim loại -->
+          <div class="rate-item-card metal">
+            <div class="rate-card-top">
+              <div class="rate-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="3" width="14" height="18" rx="2" />
+                  <path d="M9 3v18M15 3v18" />
+                </svg>
+              </div>
+              <div>
+                <div class="rate-card-title">Kim Loại (Lon / Thiếc)</div>
+                <div class="rate-card-sub">Ngăn nạp số 2</div>
+              </div>
+            </div>
+
+            <div class="rate-input-group">
+              <label for="rateMetal">Điểm thưởng mỗi lần bỏ rác đúng:</label>
+              <div class="rate-input-wrap">
+                <input type="number" id="rateMetal" min="1" max="100" value="15">
+                <span class="rate-unit">điểm / vật phẩm</span>
+              </div>
+            </div>
+            <div class="rate-desc">Áp dụng cho lon nước ngọt nhôm, lon bia, hộp sữa đặc, đồ hộp thiếc có thể tái chế cao.</div>
+          </div>
+
+          <!-- Rate Card: Hữu cơ -->
+          <div class="rate-item-card organic">
+            <div class="rate-card-top">
+              <div class="rate-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+                  <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+                </svg>
+              </div>
+              <div>
+                <div class="rate-card-title">Rác Hữu Cơ & Thức Ăn</div>
+                <div class="rate-card-sub">Ngăn nạp số 3</div>
+              </div>
+            </div>
+
+            <div class="rate-input-group">
+              <label for="rateOrganic">Điểm thưởng mỗi lần bỏ rác đúng:</label>
+              <div class="rate-input-wrap">
+                <input type="number" id="rateOrganic" min="1" max="100" value="5">
+                <span class="rate-unit">điểm / vật phẩm</span>
+              </div>
+            </div>
+            <div class="rate-desc">Áp dụng cho vỏ trái cây, bã trà, thức ăn thừa nhằm khuyến khích phân loại rác thải tại nguồn.</div>
+          </div>
+        </div>
+
+        <!-- Event Multiplier Settings -->
+        <div class="event-multiplier-bar">
+          <div class="multiplier-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 14 14" />
+            </svg>
+            <div>
+              <h4>Hệ số nhân sự kiện (Event Multiplier)</h4>
+              <p>Nhân đôi hoặc nhân rưỡi điểm thưởng trong các chiến dịch bảo vệ môi trường của trường</p>
+            </div>
+          </div>
+
+          <div class="multiplier-options">
+            <button type="button" class="btn-mult-choice active" data-mult="1.0">1.0x (Tiêu chuẩn)</button>
+            <button type="button" class="btn-mult-choice" data-mult="1.5">1.5x (Tuần Lễ Xanh)</button>
+            <button type="button" class="btn-mult-choice" data-mult="2.0">2.0x (Ngày Hội Môi Trường)</button>
+          </div>
+        </div>
+
+        <!-- Save Actions -->
+        <div class="rate-action-bar">
+          <button type="button" class="btn ghost" id="btnResetRates">Đặt lại mặc định</button>
+          <button type="button" class="btn" id="btnSaveRates">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Lưu cài đặt quy đổi
+          </button>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           2. KHỐI QUẢN LÝ DANH MỤC PHẦN QUÀ TẶNG (GIFT CATALOG)
+           =================================================================== -->
+      <section class="card gifts-catalog-card">
+        <div class="card-title-bar">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 12 20 22 4 22 4 12" />
+              <rect x="2" y="7" width="20" height="5" />
+              <line x1="12" y1="22" x2="12" y2="7" />
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+            </svg>
+            [2. DANH MỤC PHẦN QUÀ QUY ĐỔI CHO SINH VIÊN]
+          </h3>
+          <button type="button" class="btn-add-gift" id="btnOpenAddGift">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Thêm phần quà mới
+          </button>
+        </div>
+
+        <div class="gift-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;">STT</th>
+                <th>Phần quà & Mô tả</th>
+                <th style="width: 140px;">Điểm cần đổi</th>
+                <th style="width: 130px;">Tồn kho</th>
+                <th style="width: 130px;">Trạng thái</th>
+                <th style="width: 150px;">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="giftTableBody">
+              <!-- Rendered dynamically by doi-thuong.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           3. KHỐI NHẬT KÝ SINH VIÊN ĐỔI THƯỞNG
+           =================================================================== -->
+      <section class="card redemption-log-card">
+        <div class="card-title-bar">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            [3. NHẬT KÝ ĐỔI QUÀ CỦA SINH VIÊN]
+          </h3>
+          <span style="font-size: 12px; color: var(--mut);">Tự động ghi nhận khi sinh viên bấm Đổi quà tại Cổng Sinh Viên</span>
+        </div>
+
+        <div class="gift-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 120px;">Mã Đổi</th>
+                <th style="width: 120px;">MSSV</th>
+                <th>Họ và Tên Sinh Viên</th>
+                <th>Phần Quà Đã Đổi</th>
+                <th style="width: 120px;">Điểm Trừ</th>
+                <th style="width: 160px;">Thời Gian</th>
+                <th style="width: 140px;">Trạng Thái</th>
+              </tr>
+            </thead>
+            <tbody id="redemptionTableBody">
+              <!-- Rendered dynamically by doi-thuong.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modal Thêm / Chỉnh Sửa Quà Tặng -->
+  <div class="modal-backdrop" id="modalGift" role="dialog" aria-modal="true">
+    <div class="modal-gift-dialog">
+      <div class="modal-header-esp">
+        <h3 id="modalGiftTitle">Thêm phần quà mới</h3>
+        <button class="modal-close-btn" id="btnCloseGiftModal" aria-label="Đóng">&times;</button>
+      </div>
+
+      <div class="gift-form-row">
+        <label for="giftName">Tên phần quà (*):</label>
+        <input type="text" id="giftName" placeholder="Ví dụ: Voucher Căn tin 20.000đ" required>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="gift-form-row">
+          <label for="giftPoints">Số điểm cần quy đổi (*):</label>
+          <input type="number" id="giftPoints" min="1" value="50" required>
+        </div>
+        <div class="gift-form-row">
+          <label for="giftStock">Số lượng trong kho (*):</label>
+          <input type="number" id="giftStock" min="0" value="50" required>
+        </div>
+      </div>
+
+      <div class="gift-form-row">
+        <label for="giftIcon">Biểu tượng / Emoji quà tặng:</label>
+        <input type="text" id="giftIcon" value="🎁" placeholder="🎁, ☕, 🍃, 🛍️, 🎖️, ✏️...">
+      </div>
+
+      <div class="gift-form-row">
+        <label for="giftDesc">Mô tả phần quà & Nơi nhận:</label>
+        <textarea id="giftDesc" placeholder="Mô tả điều kiện sử dụng hoặc địa điểm nhận quà..."></textarea>
+      </div>
+
+      <div class="gift-modal-actions">
+        <button type="button" class="btn ghost" id="btnCancelGiftModal">Hủy</button>
+        <button type="button" class="btn" id="btnSaveGiftModal">Lưu phần quà</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cấu hình Kết nối ESP32 (Đồng bộ toàn hệ thống) -->
+  <div class="modal-backdrop" id="modalEspConnect" role="dialog" aria-modal="true">
+    <div class="modal-dialog-esp">
+      <div class="modal-header-esp">
+        <h3>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="13" width="20" height="8" rx="2" />
+            <path d="M6 13V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5" />
+            <line x1="12" y1="6" x2="12" y2="2" />
+          </svg>
+          Kết nối Vi điều khiển ESP32-S3
+        </h3>
+        <button class="modal-close-btn btn-close-esp-modal" id="modalEspClose" aria-label="Đóng">&times;</button>
+      </div>
+
+      <div class="esp-status-row" style="margin-bottom: 14px;">
+        <span class="esp-status-badge connected">
+          <span class="esp-pulse-dot"></span> ĐÃ KẾT NỐI (ESP32-S3)
+        </span>
+      </div>
+
+      <div class="esp-connect-grid">
+        <div class="esp-form-group">
+          <label for="espProtocol">Giao thức kết nối</label>
+          <select id="espProtocol" class="esp-select">
+            <option value="ws">WebSocket (ws://) – Telemetry thời gian thực</option>
+            <option value="http">HTTP REST API (http://)</option>
+            <option value="mqtt">MQTT Broker (tcp://)</option>
+            <option value="serial">Web Serial (UART / USB COM)</option>
+          </select>
+        </div>
+
+        <div class="esp-row-dual">
+          <div class="esp-form-group">
+            <label for="espHost">Địa chỉ IP / Host ESP32</label>
+            <input type="text" id="espHost" class="esp-input" value="192.168.1.105">
+          </div>
+          <div class="esp-form-group">
+            <label for="espPort">Cổng (Port)</label>
+            <input type="text" id="espPort" class="esp-input" value="81">
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Telemetry Metrics Row -->
+      <div class="esp-metrics-row">
+        <div class="esp-metric-item">
+          <div class="esp-metric-label">Độ trễ Ping</div>
+          <div class="esp-metric-val" id="espPing">18 ms</div>
+        </div>
+        <div class="esp-metric-item">
+          <div class="esp-metric-label">Sóng WiFi</div>
+          <div class="esp-metric-val" id="espRssi">-54 dBm</div>
+        </div>
+        <div class="esp-metric-item">
+          <div class="esp-metric-label">Gói tin Rx/Tx</div>
+          <div class="esp-metric-val" id="espPackets">1,420 / 980</div>
+        </div>
+        <div class="esp-metric-item">
+          <div class="esp-metric-label">RAM Heap</div>
+          <div class="esp-metric-val" id="espHeap">124 KB</div>
+        </div>
+      </div>
+
+      <!-- Terminal Console Box -->
+      <div class="esp-console-wrapper">
+        <div class="esp-console-header">
+          <span>NHẬT KÝ TRUYỀN NHẬN (SERIAL / WEBSOCKET LOG)</span>
+          <button type="button" id="btnClearEspLog" style="background:transparent;border:0;color:var(--mut);cursor:pointer;font-size:11px;">[Xóa log]</button>
+        </div>
+        <div class="esp-console-box">
+          <div class="esp-log-line"><span class="esp-log-time">[10:24:12]</span><span class="esp-log-tag">[SYSTEM]</span> Khởi tạo kết nối WebSocket ws://192.168.1.105:81/ws...</div>
+          <div class="esp-log-line"><span class="esp-log-time">[10:24:13]</span><span class="esp-log-tag">[ESP32-S3]</span> Bắt tay thành công (Handshake OK). Chip: ESP32-S3-WROOM-1</div>
+          <div class="esp-log-line"><span class="esp-log-time">[10:24:15]</span><span class="esp-log-tag">[SENSOR]</span> Cảm biến quang điện kích hoạt: Cửa nạp #1</div>
+          <div class="esp-log-line"><span class="esp-log-time">[10:24:16]</span><span class="esp-log-tag">[CAMERA]</span> OV2640 hoàn tất gửi khung hình 240x240</div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="esp-actions">
+        <button type="button" class="btn btn-disconnect btn-esp-toggle">Ngắt kết nối</button>
+        <button type="button" class="btn ghost" id="btnPingEsp">Kiểm tra Ping</button>
+        <label class="esp-auto-check">
+          <input type="checkbox" id="espAutoReconnect" checked> Tự động kết nối lại
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast" id="toast" role="status"></div>
+</body>
+
+</html>
+

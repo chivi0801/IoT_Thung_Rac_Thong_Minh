@@ -189,6 +189,53 @@ nav a:focus-visible {
   margin-right: 6px;
 }
 
+/* Link chuyển sang Cổng Sinh Viên (Desktop) */
+.portal-link-box {
+  margin-top: auto;
+  margin-bottom: 12px;
+}
+
+.portal-btn-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+  color: #ffffff !important;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 3px 10px rgba(27, 67, 50, 0.25);
+  transition: all 0.2s ease;
+}
+
+.portal-btn-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(27, 67, 50, 0.35);
+  background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%);
+}
+
+.portal-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+  animation: portalPulse 2s infinite;
+}
+
+@keyframes portalPulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.portal-btn-link svg {
+  margin-left: auto;
+  opacity: 0.8;
+}
+
 /* --------------------------------------------------------------------------
    3. Tablet Responsive Styles (768px - 1199px)
    -------------------------------------------------------------------------- */
@@ -243,6 +290,7 @@ nav a:focus-visible {
 
   .brand,
   .navlabel,
+  .portal-link-box,
   .hw {
     display: none !important;
   }
