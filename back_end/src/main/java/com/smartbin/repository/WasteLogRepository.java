@@ -28,6 +28,8 @@ public interface WasteLogRepository extends JpaRepository<WasteLog, Long> {
 
     List<WasteLog> findAllByOrderByCreatedAtDesc();
 
+    List<WasteLog> findByStudentMssvOrderByCreatedAtDesc(String studentMssv);
+
     Page<WasteLog> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     Page<WasteLog> findByCategoryIgnoreCaseOrderByCreatedAtDesc(String category, Pageable pageable);
