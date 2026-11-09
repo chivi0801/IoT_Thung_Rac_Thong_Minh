@@ -14,9 +14,10 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Real-time WebSocket gateway for ESP32-S3 telemetry, heartbeats and the
@@ -161,7 +162,7 @@ public class IoTTelescopeWebSocketHandler extends TextWebSocketHandler {
     }
 
     private boolean isPing(JsonNode node, String rawPayload) {
-        String type = node.path("type").asString("");
+        String type = node.path("type").asText("");
         if ("PING".equalsIgnoreCase(type)) {
             return true;
         }
@@ -172,7 +173,7 @@ public class IoTTelescopeWebSocketHandler extends TextWebSocketHandler {
     }
 
     private boolean isTelemetry(JsonNode node) {
-        String type = node.path("type").asString("");
+        String type = node.path("type").asText("");
         if ("TELEMETRY".equalsIgnoreCase(type) || "HEARTBEAT".equalsIgnoreCase(type)) {
             return true;
         }
@@ -196,7 +197,7 @@ public class IoTTelescopeWebSocketHandler extends TextWebSocketHandler {
     private JsonNode tryParse(String payload) {
         try {
             return objectMapper.readTree(payload);
-        } catch (RuntimeException e) {
+        } catch (JsonProcessingException e) {
             return null;
         }
     }

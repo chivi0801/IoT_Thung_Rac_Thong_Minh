@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 
 import com.smartbin.websocket.IoTTelescopeWebSocketHandler;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * High level helper for pushing standardized events to all connected
