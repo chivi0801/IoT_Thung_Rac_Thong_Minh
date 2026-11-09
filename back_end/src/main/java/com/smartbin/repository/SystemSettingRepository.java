@@ -29,4 +29,23 @@ public interface SystemSettingRepository extends JpaRepository<SystemSetting, St
                 })
                 .orElse(defaultValue);
     }
+
+    /**
+     * Reads a decimal setting, falling back to {@code defaultValue} when the
+     * key is missing, blank or not a valid number.
+     */
+    default double getDoubleOrDefault(String key, double defaultValue) {
+        return findById(key)
+                .map(SystemSetting::getSettingValue)
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(value -> {
+                    try {
+                        return Double.parseDouble(value);
+                    } catch (NumberFormatException ex) {
+                        return defaultValue;
+                    }
+                })
+                .orElse(defaultValue);
+    }
 }
