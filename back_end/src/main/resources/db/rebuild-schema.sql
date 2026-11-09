@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS redemptions;
+DROP TABLE IF EXISTS waste_logs;
+DROP TABLE IF EXISTS gifts;
+DROP TABLE IF EXISTS students;
+DROP TABLE IF EXISTS compartments;
+DROP TABLE IF EXISTS system_settings;
