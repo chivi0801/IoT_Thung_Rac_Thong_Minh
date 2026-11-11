@@ -1,58 +1,18 @@
 /**
  * ==========================================================================
  * CỔNG SINH VIÊN TÍCH ĐIỂM (tich-diem.js)
- * Quét nhận diện Thẻ Sinh Viên qua AI OCR, hiển thị tổng điểm tích lũy,
- * lịch sử thu thập rác cá nhân và đổi các phần quà môi trường.
- * Kết nối dữ liệu đồng bộ thời gian thực với trang Quản trị (doi-thuong.html).
+ * Quét thẻ sinh viên qua API OCR, tích điểm, đổi quà và xem lịch sử cá nhân
+ * trực tiếp từ Spring Boot REST API.
  * ==========================================================================
  */
 
 (function () {
   'use strict';
 
-  var sampleProfiles = [
-    {
-      mssv: '21120489',
-      name: 'Nguyễn Văn An',
-      dept: 'Khoa Công nghệ Thông tin',
-      className: 'K45-CNTT1',
-      points: 135,
-      rank: 'Chiến Binh Xanh (Cấp 3)',
-      nextRankPoints: 200,
-      nextRankName: 'Đại Sứ Môi Trường (Cấp 4)'
-    },
-    {
-      mssv: '22118742',
-      name: 'Trần Thị Mai Hương',
-      dept: 'Khoa Môi trường & Tài nguyên',
-      className: 'K46-MT02',
-      points: 90,
-      rank: 'Hạt Giống Xanh (Cấp 2)',
-      nextRankPoints: 120,
-      nextRankName: 'Chiến Binh Xanh (Cấp 3)'
-    },
-    {
-      mssv: '20119631',
-      name: 'Lê Hoàng Long',
-      dept: 'Khoa Điện - Điện tử',
-      className: 'K44-DTVT',
-      points: 210,
-      rank: 'Đại Sứ Môi Trường (Cấp 4)',
-      nextRankPoints: 300,
-      nextRankName: 'Thủ Lĩnh Xanh Toàn Trường (Cấp 5)'
-    }
-  ];
+  var DEFAULT_MSSV = '21120489';
 
-  var sampleHistory = [
-    { type: 'plastic', title: 'Chai nhựa nước suối PET 500ml', meta: 'Hôm nay 10:24 • Ngăn nạp #1', pts: 10, status: 'Đã gạt vào ngăn' },
-    { type: 'metal', title: 'Lon nước ngọt Coca-Cola 330ml', meta: 'Hôm nay 09:40 • Ngăn nạp #2', pts: 15, status: 'Đã gạt vào ngăn' },
-    { type: 'plastic', title: 'Ly nhựa trà sữa PP dùng 1 lần', meta: 'Hôm qua 16:12 • Ngăn nạp #1', pts: 10, status: 'Đã gạt vào ngăn' },
-    { type: 'organic', title: 'Vỏ chuối & thức ăn thừa', meta: 'Hôm qua 11:35 • Ngăn nạp #3', pts: 5, status: 'Đã gạt vào ngăn' },
-    { type: 'metal', title: 'Hộp thiếc cà phê kim loại', meta: '28/10 14:10 • Ngăn nạp #2', pts: 15, status: 'Đã gạt vào ngăn' }
-  ];
-
-  var currentStudent = sampleProfiles[0];
-  var pendingReward = 10;
+  var currentStudent = null;
+  var giftsCache = [];
   var isScanning = false;
 
   function $(id) {
@@ -65,67 +25,59 @@
     }
   }
 
-  function getGifts() {
-    try {
-      var saved = localStorage.getItem('smartbin_gifts');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-
-    // Fallback nếu trang quản trị chưa lưu
-    return [
-      { id: 1, name: 'Voucher Căn tin 20.000đ', icon: '☕', points: 50, stock: 85, desc: 'Áp dụng cho mọi món ăn & đồ uống tại Căn tin trường', status: 'active' },
-      { id: 2, name: 'Bình giữ nhiệt Eco Green 500ml', icon: '🍃', points: 200, stock: 18, desc: 'Inox 304 giữ nhiệt 12h, in logo Thùng Rác Thông Minh', status: 'active' },
-      { id: 3, name: 'Túi vải Canvas bảo vệ môi trường', icon: '🛍️', points: 80, stock: 42, desc: 'Vải canvas sợi tự nhiên tái sử dụng nhiều lần', status: 'active' },
-      { id: 4, name: '+5 Điểm rèn luyện học kỳ', icon: '🎖️', points: 150, stock: 999, desc: 'Cộng trực tiếp mục Hoạt động Tình nguyện vì Môi trường', status: 'active' },
-      { id: 5, name: 'Hộp bút tre tái sinh (3 cây)', icon: '✏️', points: 30, stock: 120, desc: 'Vỏ tre tự nhiên phân hủy sinh học, mực gel êm ái', status: 'active' }
-    ];
+  function setText(id, value) {
+    var el = $(id);
+    if (el) el.textContent = value;
   }
 
-  function updateStudentUi() {
-    if (!currentStudent) return;
+  function setAllText(selector, value) {
+    document.querySelectorAll(selector).forEach(function (el) {
+      el.textContent = value;
+    });
+  }
 
-    var nameEls = document.querySelectorAll('.st-val-name');
-    nameEls.forEach(function (el) { el.textContent = currentStudent.name; });
+  /* =========================================================================
+     1. STUDENT PROFILE & RANK
+     ========================================================================= */
+  function applyProfile(profile) {
+    if (!profile) return;
+    currentStudent = profile;
 
-    var mssvEls = document.querySelectorAll('.st-val-mssv');
-    mssvEls.forEach(function (el) { el.textContent = 'MSSV: ' + currentStudent.mssv; });
+    setAllText('.st-val-name', profile.name || '');
+    setAllText('.st-val-mssv', 'MSSV: ' + (profile.mssv || ''));
+    setAllText('.st-val-dept', profile.dept || '');
+    setAllText('.st-val-class', profile.className || '');
+    setAllText('.st-val-rank', profile.rank || '');
+    setAllText('.st-val-total-points', profile.points != null ? profile.points : 0);
 
-    var deptEls = document.querySelectorAll('.st-val-dept');
-    deptEls.forEach(function (el) { el.textContent = currentStudent.dept; });
-
-    var classEls = document.querySelectorAll('.st-val-class');
-    classEls.forEach(function (el) { el.textContent = currentStudent.className; });
-
-    var rankEls = document.querySelectorAll('.st-val-rank');
-    rankEls.forEach(function (el) { el.textContent = currentStudent.rank; });
-
-    var totalPtsEls = document.querySelectorAll('.st-val-total-points');
-    totalPtsEls.forEach(function (el) { el.textContent = currentStudent.points; });
-
-    // Cập nhật thanh tiến trình Rank
-    var maxPts = currentStudent.nextRankPoints || 200;
-    var pct = Math.min(100, Math.round((currentStudent.points / maxPts) * 100));
+    var pct = profile.rankProgressPct != null ? profile.rankProgressPct : 0;
     var fill = $('rankProgressFill');
     if (fill) fill.style.width = pct + '%';
 
-    var pctText = $('rankProgressPct');
-    if (pctText) pctText.textContent = pct + '%';
+    setText('rankProgressPct', pct + '%');
 
-    var tip = $('rankNextTip');
-    if (tip) {
-      var remain = Math.max(0, maxPts - currentStudent.points);
-      tip.textContent = 'Tích thêm ' + remain + ' điểm để đạt ' + currentStudent.nextRankName;
-    }
+    var nextPoints = profile.nextRankPoints != null ? profile.nextRankPoints : 0;
+    var points = profile.points != null ? profile.points : 0;
+    var remain = Math.max(0, nextPoints - points);
+    setText('rankNextTip', 'Tích thêm ' + remain + ' điểm để đạt ' + (profile.nextRankName || 'hạng tiếp theo'));
 
     renderGiftsCatalog();
   }
 
-  function renderHistoryList() {
+  function loadStudent(mssv) {
+    return window.SmartBin.request('/students/' + encodeURIComponent(mssv))
+      .then(applyProfile);
+  }
+
+  /* =========================================================================
+     2. PERSONAL HISTORY
+     ========================================================================= */
+  function renderHistoryList(items) {
     var container = $('studentHistoryList');
     if (!container) return;
 
     container.innerHTML = '';
-    sampleHistory.forEach(function (item) {
+    (items || []).forEach(function (item) {
       var row = document.createElement('div');
       row.className = 'student-history-item';
       row.innerHTML =
@@ -144,23 +96,36 @@
         '</div>';
       container.appendChild(row);
     });
+
+    if (!items || items.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--mut);">Chưa có lịch sử thu thập rác.</div>';
+    }
   }
 
+  function loadHistory(mssv) {
+    if (!mssv) return Promise.resolve();
+    return window.SmartBin.request('/students/' + encodeURIComponent(mssv) + '/history')
+      .then(renderHistoryList);
+  }
+
+  /* =========================================================================
+     3. GIFT CATALOG
+     ========================================================================= */
   function renderGiftsCatalog() {
     var container = $('studentGiftsGrid');
     if (!container) return;
 
-    var gifts = getGifts();
-    container.innerHTML = '';
+    var points = currentStudent && currentStudent.points != null ? currentStudent.points : 0;
 
-    gifts.forEach(function (gift) {
+    container.innerHTML = '';
+    giftsCache.forEach(function (gift) {
       if (gift.status !== 'active') return;
 
       var card = document.createElement('div');
       card.className = 'student-gift-card';
 
-      var canAfford = currentStudent.points >= gift.points && gift.stock > 0;
-      var remainPts = gift.points - currentStudent.points;
+      var canAfford = points >= gift.points && gift.stock > 0;
+      var remainPts = gift.points - points;
 
       card.innerHTML =
         '<div class="gift-card-top">' +
@@ -180,13 +145,30 @@
 
       container.appendChild(card);
     });
+
+    if (container.children.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--mut);">Chưa có phần quà nào đang mở đổi.</div>';
+    }
   }
 
+  function loadGifts() {
+    return window.SmartBin.request('/rewards/gifts')
+      .then(function (gifts) {
+        giftsCache = gifts || [];
+        renderGiftsCatalog();
+      });
+  }
+
+  /* =========================================================================
+     4. OCR CARD SCANNING
+     ========================================================================= */
   function handleFile(file) {
     if (!file || !file.type.match(/^image\//i)) {
       notify('Vui lòng chọn hoặc thả tệp hình ảnh hợp lệ (JPG, PNG, WEBP)!');
       return;
     }
+
+    if (isScanning) return;
 
     var previewContainer = $('dropPreviewContainer');
     var previewImg = $('dropPreviewImg');
@@ -207,27 +189,35 @@
 
       isScanning = true;
 
-      // Giả lập quét AI OCR trong 950ms
-      setTimeout(function () {
-        if (laser) laser.classList.remove('scanning');
-        isScanning = false;
+      var formData = new FormData();
+      formData.append('file', file);
 
-        // Chọn ngẫu nhiên hồ sơ sinh viên
-        var profile = sampleProfiles[Math.floor(Math.random() * sampleProfiles.length)];
-        currentStudent = profile;
-        updateStudentUi();
+      window.SmartBin.request('/students/ocr-scan', {
+        method: 'POST',
+        body: formData
+      })
+        .then(function (profile) {
+          applyProfile(profile);
 
-        if (statusLabel) {
-          statusLabel.textContent = 'Đã nhận diện: ' + profile.name + ' (' + profile.mssv + ')';
-        }
+          if (statusLabel) {
+            statusLabel.textContent = 'Đã nhận diện: ' + profile.name + ' (' + profile.mssv + ')';
+          }
 
-        var avatarBoxes = document.querySelectorAll('.student-avatar-box');
-        avatarBoxes.forEach(function (box) {
-          box.innerHTML = '<img src="' + dataUrl + '" alt="Ảnh thẻ">';
+          document.querySelectorAll('.student-avatar-box').forEach(function (box) {
+            box.innerHTML = '<img src="' + dataUrl + '" alt="Ảnh thẻ">';
+          });
+
+          notify('✓ Nhận diện thành công thẻ sinh viên: ' + profile.name + ' (' + profile.mssv + ')!');
+          return loadHistory(profile.mssv);
+        })
+        .catch(function (err) {
+          if (statusLabel) statusLabel.textContent = 'Nhận diện thất bại: ' + err.message;
+          notify('Không thể nhận diện thẻ: ' + err.message);
+        })
+        .finally(function () {
+          isScanning = false;
+          if (laser) laser.classList.remove('scanning');
         });
-
-        notify('✓ Nhận diện thành công thẻ sinh viên: ' + profile.name + ' (' + profile.mssv + ')!');
-      }, 950);
     };
 
     reader.readAsDataURL(file);
@@ -246,95 +236,70 @@
     if (statusLabel) statusLabel.style.display = 'none';
     if (fileInput) fileInput.value = '';
 
-    var avatarBoxes = document.querySelectorAll('.student-avatar-box');
-    avatarBoxes.forEach(function (box) {
+    document.querySelectorAll('.student-avatar-box').forEach(function (box) {
       box.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
     });
 
     notify('Đã sẵn sàng quét thẻ sinh viên tiếp theo.');
   }
 
+  /* =========================================================================
+     5. CLAIM POINTS
+     ========================================================================= */
   function confirmReward() {
     if (!currentStudent) {
       notify('Vui lòng quét thẻ sinh viên trước khi tích điểm!');
       return;
     }
 
-    currentStudent.points += pendingReward;
-    updateStudentUi();
+    var previousPoints = currentStudent.points != null ? currentStudent.points : 0;
 
-    // Thêm vào lịch sử cá nhân
-    var now = new Date();
-    var timeStr = 'Hôm nay ' + ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
-    sampleHistory.unshift({
-      type: 'plastic',
-      title: 'Chai nhựa nước giải khát vừa nạp',
-      meta: timeStr + ' • Ngăn nạp #1',
-      pts: pendingReward,
-      status: 'Đã hoàn tất cơ khí'
-    });
-    renderHistoryList();
-
-    notify('🎉 Chúc mừng bạn ' + currentStudent.name + ' vừa được tích +' + pendingReward + ' Điểm Xanh!');
+    window.SmartBin.sendJson('/students/claim-reward', 'POST', { mssv: currentStudent.mssv })
+      .then(function (profile) {
+        applyProfile(profile);
+        var gained = (profile.points != null ? profile.points : 0) - previousPoints;
+        notify('🎉 Chúc mừng bạn ' + profile.name + ' vừa được tích +' + gained + ' Điểm Xanh!');
+        return loadHistory(profile.mssv);
+      })
+      .catch(function (err) { notify('Không thể tích điểm: ' + err.message); });
   }
 
+  /* =========================================================================
+     6. REDEEM GIFT
+     ========================================================================= */
   function redeemGift(giftId) {
-    var gifts = getGifts();
-    var gift = gifts.find(function (g) { return g.id === giftId; });
-    if (!gift) return;
-
-    if (currentStudent.points < gift.points) {
-      notify('Bạn chưa đủ điểm để đổi phần quà này!');
+    if (!currentStudent) {
+      notify('Vui lòng quét thẻ sinh viên trước khi đổi quà!');
       return;
     }
 
-    if (gift.stock <= 0) {
-      notify('Phần quà này hiện đã tạm hết trong kho!');
-      return;
-    }
-
-    // Trừ điểm sinh viên & trừ kho quà
-    currentStudent.points -= gift.points;
-    gift.stock -= 1;
-    localStorage.setItem('smartbin_gifts', JSON.stringify(gifts));
-
-    // Tạo mã phiếu đổi quà
-    var voucherCode = 'ECO-' + Math.floor(1000 + Math.random() * 9000);
-    var now = new Date();
-    var timeStr = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ' - Hôm nay';
-
-    // Thêm vào nhật ký đổi quà chung (đồng bộ sang trang Quản trị)
-    var redemptions = [];
-    try {
-      var saved = localStorage.getItem('smartbin_redemptions');
-      if (saved) redemptions = JSON.parse(saved);
-    } catch (e) {}
-
-    redemptions.unshift({
-      code: voucherCode,
+    window.SmartBin.sendJson('/students/redeem', 'POST', {
       mssv: currentStudent.mssv,
-      name: currentStudent.name,
-      giftName: gift.name,
-      points: gift.points,
-      time: timeStr,
-      status: 'pending'
-    });
-    localStorage.setItem('smartbin_redemptions', JSON.stringify(redemptions));
+      giftId: giftId
+    })
+      .then(function (voucher) {
+        var modal = $('modalVoucher');
+        if (modal) {
+          setText('voucherCodeText', voucher.voucherCode);
+          setText('voucherGiftName', voucher.giftName);
+          setText('voucherStudentName', voucher.studentName + ' (' + voucher.mssv + ')');
+          modal.classList.add('open');
+        }
 
-    updateStudentUi();
+        notify('🎉 ' + (voucher.message || ('Đổi quà thành công! Mã voucher ' + voucher.voucherCode)));
 
-    // Mở Modal Voucher chúc mừng
-    var modal = $('modalVoucher');
-    if (modal) {
-      if ($('voucherCodeText')) $('voucherCodeText').textContent = voucherCode;
-      if ($('voucherGiftName')) $('voucherGiftName').textContent = gift.name;
-      if ($('voucherStudentName')) $('voucherStudentName').textContent = currentStudent.name + ' (' + currentStudent.mssv + ')';
-      modal.classList.add('open');
-    }
-
-    notify('🎉 Đổi quà thành công! Hãy xuất trình mã voucher ' + voucherCode + ' tại quầy để nhận quà.');
+        return Promise.all([
+          loadStudent(currentStudent.mssv),
+          loadGifts(),
+          loadHistory(currentStudent.mssv)
+        ]);
+      })
+      .catch(function (err) { notify('Không thể đổi quà: ' + err.message); });
   }
 
+  /* =========================================================================
+     7. TAB & DROP ZONE EVENTS
+     ========================================================================= */
   function setupTabs() {
     var tabBtns = document.querySelectorAll('.portal-tabs-nav .tab-btn');
     var tabContents = document.querySelectorAll('.tab-content');
@@ -398,25 +363,34 @@
     });
   }
 
+  /* =========================================================================
+     8. INITIALISATION
+     ========================================================================= */
   function init() {
-    updateStudentUi();
-    renderHistoryList();
-    renderGiftsCatalog();
     setupDropZone();
     setupTabs();
 
-    // Event Delegation
+    Promise.all([loadStudent(DEFAULT_MSSV), loadGifts()])
+      .then(function () {
+        if (currentStudent) return loadHistory(currentStudent.mssv);
+      })
+      .catch(function (err) {
+        notify('Không thể tải dữ liệu cổng sinh viên: ' + err.message);
+      });
+
     document.addEventListener('click', function (e) {
-      if (e.target && e.target.classList.contains('btn-confirm-reward')) {
+      if (e.target.closest('.btn-confirm-reward')) {
         confirmReward();
+        return;
       }
-      if (e.target && e.target.classList.contains('btn-reset-drop')) {
+      if (e.target.closest('.btn-reset-drop')) {
         resetDrop();
+        return;
       }
       var redeemBtn = e.target.closest('.btn-redeem-action');
       if (redeemBtn && !redeemBtn.disabled) {
-        var id = parseInt(redeemBtn.getAttribute('data-id'), 10);
-        redeemGift(id);
+        redeemGift(parseInt(redeemBtn.getAttribute('data-id'), 10));
+        return;
       }
       if (e.target && (e.target.id === 'btnCloseVoucher' || e.target.id === 'modalVoucher')) {
         var modal = $('modalVoucher');
@@ -436,6 +410,6 @@
     confirmReward: confirmReward,
     redeemGift: redeemGift,
     resetDrop: resetDrop,
-    updateUi: updateStudentUi
+    updateUi: function () { if (currentStudent) applyProfile(currentStudent); }
   };
 })();

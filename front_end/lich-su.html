@@ -19,6 +19,9 @@
   <link rel="stylesheet" href="assets/css/lich-su.css">
   <link rel="stylesheet" href="assets/css/esp32-connect.css">
 
+  <!-- Runtime API/WebSocket config (must load before common.js) -->
+  <script src="assets/js/config.js" defer></script>
+
   <!-- Scripts -->
   <script src="assets/js/common.js" defer></script>
   <script src="assets/js/sidebar.js" defer></script>
@@ -146,7 +149,7 @@
           <button class="filter-btn all active" data-filter="ALL">Tất cả (86)</button>
           <button class="filter-btn nhua" data-filter="NHỰA">Nhựa (38)</button>
           <button class="filter-btn kim-loai" data-filter="KIM LOẠI">Kim loại (21)</button>
-          <button class="filter-btn huu-co" data-filter="HỮU CƠ">Hữu cơ (27)</button>
+          <button class="filter-btn huu-co" data-filter="GIẤY">Giấy (27)</button>
         </section>
 
         <!-- Desktop Main Table Card -->
@@ -261,13 +264,13 @@
             </svg>
             <span>Kim loại</span>
           </button>
-          <button class="filter-btn huu-co" data-filter="HỮU CƠ">
+          <button class="filter-btn huu-co" data-filter="GIẤY">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 20A7 7 0 0 1 4 13C4 9.13 7.13 6 11 6c.55 0 1 .45 1 1v13Z" />
               <path d="M13 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7-.55 0-1 .45-1 1v13Z" />
               <path d="M12 6V2" />
             </svg>
-            <span>Hữu cơ</span>
+            <span>Giấy</span>
           </button>
         </div>
 

@@ -1,10 +1,15 @@
 /**
  * ==========================================================================
  * COMMON JAVASCRIPT (common.js)
- * Chứa logic dùng chung cho cả 3 trang: Toast notification, điều hướng,
- * format thời gian và tiện ích hệ thống.
+ * Chứa cấu hình API/WebSocket toàn cục, tiện ích gọi REST API, Toast
+ * notification, điều hướng và format thời gian.
  * ==========================================================================
  */
+
+window.API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+  || 'http://localhost:8080/api/v1';
+window.WS_BASE = (window.APP_CONFIG && window.APP_CONFIG.WS_URL)
+  || 'ws://localhost:8080/ws/iot';
 
 var SmartBin = (function () {
   'use strict';
@@ -33,6 +38,53 @@ var SmartBin = (function () {
     toastTimer = setTimeout(function () {
       toastEl.classList.remove('show');
     }, duration || 2400);
+  }
+
+  /**
+   * Gọi REST API Spring Boot và trả về trường `data` của envelope chuẩn.
+   *
+   * @param {string} path - Đường dẫn tương đối, ví dụ: /dashboard/kpi
+   * @param {object} [options] - Tuỳ chọn fetch (method, headers, body...)
+   * @returns {Promise<*>} giá trị json.data
+   */
+  function request(path, options) {
+    var opts = options || {};
+    var url = /^https?:\/\//i.test(path) ? path : (window.API_BASE + path);
+
+    return fetch(url, opts).then(function (res) {
+      return res.text().then(function (text) {
+        var json = null;
+        if (text) {
+          try {
+            json = JSON.parse(text);
+          } catch (e) {
+            json = null;
+          }
+        }
+
+        if (!res.ok) {
+          var errMsg = (json && json.message) || ('Lỗi HTTP ' + res.status);
+          throw new Error(errMsg);
+        }
+
+        if (json && json.success === false) {
+          throw new Error(json.message || 'Yêu cầu thất bại');
+        }
+
+        return json ? json.data : null;
+      });
+    });
+  }
+
+  /**
+   * Gửi request JSON (POST/PUT/PATCH) tới REST API.
+   */
+  function sendJson(path, method, payload) {
+    return request(path, {
+      method: method || 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload === undefined ? undefined : JSON.stringify(payload)
+    });
   }
 
   /**
@@ -79,6 +131,8 @@ var SmartBin = (function () {
   return {
     toast: showToast,
     now: getCurrentTimeString,
-    initNav: highlightCurrentNav
+    initNav: highlightCurrentNav,
+    request: request,
+    sendJson: sendJson
   };
 })();

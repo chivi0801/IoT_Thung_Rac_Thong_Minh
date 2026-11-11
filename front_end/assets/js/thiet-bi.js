@@ -1,30 +1,15 @@
 /**
  * ==========================================================================
  * THIẾT BỊ & PHÂN LOẠI JAVASCRIPT (thiet-bi.js)
- * Quản lý trạng thái 3 ngăn rác, cảm biến siêu âm, đặt lại ngăn sau khi
- * đổ rác, cấu hình ngưỡng cảnh báo và mô phỏng luồng AI Vision trực tiếp.
+ * Nạp trạng thái 3 ngăn rác, cấu hình ngưỡng cảnh báo và thông tin phần cứng
+ * trực tiếp từ Spring Boot REST API.
  * ==========================================================================
  */
 
 (function () {
   'use strict';
 
-  // Dữ liệu mẫu mô phỏng từ vi điều khiển ESP32
-  var cps = [
-    { id: 1, key: 'pl', name: 'NGĂN SỐ 1 · NHỰA', level: 86, count: 38, dist: 5.6 },
-    { id: 2, key: 'me', name: 'NGĂN SỐ 2 · KIM LOẠI', level: 42, count: 21, dist: 17.4 },
-    { id: 3, key: 'or', name: 'NGĂN SỐ 3 · HỮU CƠ', level: 63, count: 27, dist: 11.1 }
-  ];
-
-  var CAP = 30; // Chiều sâu ngăn rác (cm) để quy đổi khoảng cách siêu âm -> %
-
-  var alerts = [
-    { t: '10:15', lv: 'warn', m: 'Ngăn 1 (Nhựa) đạt 80%', s: 'Vượt ngưỡng cảnh báo' },
-    { t: '09:48', lv: 'info', m: 'Ngăn 2 (Kim loại) đã được đổ rác', s: 'Mức đầy về 5%' },
-    { t: '09:12', lv: 'warn', m: 'Độ tin cậy thấp (52%)', s: 'Vật thể chưa được phân loại' }
-  ];
-
-  var cfgDef = { full: 80, conf: 60 };
+  var compartments = [];
   var cfg = { full: 80, conf: 60 };
 
   function $(id) {
@@ -37,62 +22,70 @@
     }
   }
 
-  function formatNowTime() {
-    var d = new Date();
-    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  function setText(id, value) {
+    var el = $(id);
+    if (el) el.textContent = value;
   }
 
-  function getCompartmentStatus(level) {
-    if (level >= 95) return { c: 'bad', t: 'ĐẦY' };
-    if (level >= cfg.full) return { c: 'warn', t: 'SẮP ĐẦY' };
-    return { c: 'ok', t: 'BÌNH THƯỜNG' };
-  }
-
-  /**
-   * Render các thẻ ngăn rác trên Desktop
-   */
+  /* =========================================================================
+     1. COMPARTMENTS
+     ========================================================================= */
   function renderCompartments() {
     var cpsEl = $('cps');
     if (!cpsEl) return;
 
-    var full = [];
+    var warningItems = [];
     var html = '';
 
-    cps.forEach(function (c) {
-      var st = getCompartmentStatus(c.level);
-      if (st.c !== 'ok') {
-        full.push('Ngăn ' + c.id + ' ' + (st.c === 'bad' ? 'đã đầy' : 'sắp đầy (' + c.level + '%)'));
+    compartments.forEach(function (c) {
+      var level = c.level == null ? 0 : c.level;
+      var count = c.count == null ? 0 : c.count;
+      var dist = c.dist == null ? 0 : c.dist;
+      var statusClass = c.statusClass || 'ok';
+      var statusText = c.statusText || 'BÌNH THƯỜNG';
+      var name = c.name || '';
+
+      if (c.id === 3) {
+        name = name.replace('HỮU CƠ', 'GIẤY').replace('Hữu cơ', 'Giấy');
+        if (!name) name = 'NGĂN SỐ 3 · GIẤY';
+      }
+
+      if (statusClass !== 'ok') {
+        warningItems.push('Ngăn ' + c.id + ' ' + statusText.toLowerCase() + ' (' + level + '%)');
       }
 
       html += '<article id="ngan-' + c.id + '" class="card cp ' + c.key + '">' +
-        '<h3>' + c.name + '</h3>' +
-        '<div class="big mono">' + c.level + '<small>%</small></div>' +
-        '<span class="pill s-' + st.c + '">' + st.t + '</span>' +
-        '<div class="bar ' + (st.c === 'ok' ? '' : st.c) + '" role="progressbar" aria-valuenow="' + c.level + '" aria-valuemin="0" aria-valuemax="100">' +
-          '<span style="width:' + c.level + '%"></span>' +
+        '<h3>' + name + '</h3>' +
+        '<div class="big mono">' + level + '<small>%</small></div>' +
+        '<span class="pill s-' + statusClass + '">' + statusText + '</span>' +
+        '<div class="bar ' + (statusClass === 'ok' ? '' : statusClass) + '" role="progressbar" aria-valuenow="' + level + '" aria-valuemin="0" aria-valuemax="100">' +
+          '<span style="width:' + level + '%"></span>' +
         '</div>' +
         '<div class="scale"><span>0%</span><span>' + cfg.full + '%</span><span>100%</span></div>' +
-        '<div class="meta"><span>Số vật thể</span><b>' + c.count + '</b></div>' +
-        '<div class="meta" style="margin-top:-6px;border:0;padding:0"><span>Cách miệng thùng</span><b>' + c.dist.toFixed(1) + ' cm</b></div>' +
+        '<div class="meta"><span>Số vật thể</span><b>' + count + '</b></div>' +
+        '<div class="meta" style="margin-top:-6px;border:0;padding:0"><span>Cách miệng thùng</span><b>' + dist.toFixed(1) + ' cm</b></div>' +
         '<button class="btn" style="margin-top:16px" data-id="' + c.id + '">Đã đổ rác</button>' +
       '</article>';
     });
 
     cpsEl.innerHTML = html;
 
-    // Cập nhật Banner cảnh báo
     var banner = $('banner');
     var bannerTx = $('bannerTx');
-
     if (banner && bannerTx) {
-      banner.classList.toggle('show', full.length > 0);
-      bannerTx.textContent = full.join(' · ') + (full.length > 0 ? '. Cần đổ rác sớm.' : '');
+      banner.classList.toggle('show', warningItems.length > 0);
+      bannerTx.textContent = warningItems.join(' · ') + (warningItems.length > 0 ? '. Cần đổ rác sớm.' : '');
     }
   }
 
-  /**
-   * Đặt lại ngăn rác sau khi người dùng bấm Đã đổ rác
-   */
+  function loadCompartments() {
+    return window.SmartBin.request('/devices/compartments')
+      .then(function (data) {
+        compartments = data || [];
+        renderCompartments();
+      });
+  }
+
   function setupResetTrash() {
     var cpsEl = $('cps');
     if (!cpsEl) return;
@@ -101,32 +94,47 @@
       var btn = e.target.closest('button[data-id]');
       if (!btn) return;
 
-      var c = cps[btn.dataset.id - 1];
-      if (!c) return;
+      var id = parseInt(btn.dataset.id, 10);
+      var compartment = compartments.find(function (c) { return c.id === id; });
+      if (!compartment) return;
 
-      if (!confirm('Xác nhận đã đổ rác ngăn ' + c.id + '? Bộ đếm vật thể của ngăn sẽ về 0 (lịch sử vẫn giữ nguyên).')) {
+      if (!confirm('Xác nhận đã đổ rác ngăn ' + id + '? Bộ đếm vật thể của ngăn sẽ về 0 (lịch sử vẫn giữ nguyên).')) {
         return;
       }
 
-      c.level = 5;
-      c.count = 0;
-      c.dist = CAP * 0.95;
-
-      alerts.unshift({
-        t: formatNowTime(),
-        lv: 'info',
-        m: 'Ngăn ' + c.id + ' đã được đổ rác',
-        s: 'Mức đầy về 5%'
-      });
-
-      renderCompartments();
-      notify('Đã đặt lại ngăn ' + c.id);
+      btn.disabled = true;
+      window.SmartBin.request('/devices/compartments/' + id + '/reset', { method: 'POST' })
+        .then(function () { return loadCompartments(); })
+        .then(function () { notify('Đã đặt lại ngăn ' + id); })
+        .catch(function (err) { notify('Không thể đặt lại ngăn: ' + err.message); })
+        .finally(function () { btn.disabled = false; });
     });
   }
 
-  /**
-   * Thiết lập sự kiện thanh trượt cấu hình
-   */
+  /* =========================================================================
+     2. CONFIGURATION SLIDERS
+     ========================================================================= */
+  function applyConfigToUi() {
+    var thFull = $('thFull');
+    var thConf = $('thConf');
+
+    if (thFull) thFull.value = cfg.full;
+    if (thConf) thConf.value = cfg.conf;
+    setText('thFullV', cfg.full + '%');
+    setText('thConfV', cfg.conf + '%');
+  }
+
+  function loadConfigs() {
+    return window.SmartBin.request('/devices/configs')
+      .then(function (data) {
+        if (!data) return;
+        cfg.full = data.thFull != null ? data.thFull : 80;
+        cfg.conf = data.thConf != null ? data.thConf : 60;
+        applyConfigToUi();
+        renderCompartments();
+      });
+  }
+
   function setupConfigSliders() {
     function bindSlider(id, key) {
       var el = $(id);
@@ -146,79 +154,76 @@
     var saveBtn = $('saveCfg');
     if (saveBtn) {
       saveBtn.addEventListener('click', function () {
-        notify('Đã lưu cấu hình thành công');
+        var thFull = $('thFull');
+        var thConf = $('thConf');
+        var payload = {
+          thFull: thFull ? parseInt(thFull.value, 10) : cfg.full,
+          thConf: thConf ? parseInt(thConf.value, 10) : cfg.conf
+        };
+
+        saveBtn.disabled = true;
+        window.SmartBin.sendJson('/devices/configs', 'PUT', payload)
+          .then(function (data) {
+            cfg.full = data.thFull;
+            cfg.conf = data.thConf;
+            applyConfigToUi();
+            renderCompartments();
+            notify('Đã lưu cấu hình thành công');
+          })
+          .catch(function (err) { notify('Không thể lưu cấu hình: ' + err.message); })
+          .finally(function () { saveBtn.disabled = false; });
       });
     }
 
     var resetBtn = $('resetCfg');
     if (resetBtn) {
       resetBtn.addEventListener('click', function () {
-        cfg.full = cfgDef.full;
-        cfg.conf = cfgDef.conf;
-
-        var thFull = $('thFull');
-        var thConf = $('thConf');
-        var thFullV = $('thFullV');
-        var thConfV = $('thConfV');
-
-        if (thFull) thFull.value = cfg.full;
-        if (thConf) thConf.value = cfg.conf;
-        if (thFullV) thFullV.textContent = cfg.full + '%';
-        if (thConfV) thConfV.textContent = cfg.conf + '%';
-
-        renderCompartments();
-        notify('Đã đặt lại cấu hình mặc định');
+        resetBtn.disabled = true;
+        window.SmartBin.sendJson('/devices/configs', 'PUT', { thFull: 80, thConf: 60 })
+          .then(function (data) {
+            cfg.full = data.thFull;
+            cfg.conf = data.thConf;
+            applyConfigToUi();
+            renderCompartments();
+            notify('Đã đặt lại cấu hình mặc định');
+          })
+          .catch(function (err) { notify('Không thể đặt lại cấu hình: ' + err.message); })
+          .finally(function () { resetBtn.disabled = false; });
       });
     }
   }
 
-  /**
-   * Đồng hồ cập nhật thời gian uptime và thời điểm liên lạc gần nhất
-   */
-  function setupUptimeTicker() {
-    var startTime = Date.now() - (3 * 3600 + 27 * 60) * 1000;
+  /* =========================================================================
+     3. HARDWARE TELEMETRY
+     ========================================================================= */
+  function loadHardwareInfo() {
+    return window.SmartBin.request('/devices/hardware-info')
+      .then(function (data) {
+        if (!data) return;
 
-    function tick() {
-      var s = Math.floor((Date.now() - startTime) / 1000);
-      var h = Math.floor(s / 3600);
-      var m = Math.floor((s % 3600) / 60);
+        setText('uptime', data.uptime || '--');
+        setText('lastSeen', data.lastSeen || '--');
+        setText('wifiRssi', (data.wifiRssi != null ? data.wifiRssi : '--') + ' dBm');
 
-      var uptimeEl = $('uptime');
-      if (uptimeEl) {
-        uptimeEl.textContent = h + ' giờ ' + m + ' phút';
-      }
-
-      var lastSeenEl = $('lastSeen');
-      if (lastSeenEl) {
-        var d = new Date();
-        lastSeenEl.textContent = d.toLocaleTimeString('vi-VN') + ' (vừa xong)';
-      }
-    }
-
-    tick();
-    setInterval(tick, 30000);
+        var devOn = $('devOn');
+        if (devOn) {
+          var online = data.status === 'ONLINE';
+          devOn.textContent = data.status || (online ? 'ONLINE' : 'OFFLINE');
+          devOn.style.color = online ? 'var(--ok, #059669)' : 'var(--bad, #dc2626)';
+        }
+      });
   }
 
-  /**
-   * Mô phỏng tín hiệu camera và cảm biến AI Vision trên Mobile
-   */
-  function setupMobileVisionSimulation() {
-    var latencyPill = $('latencyPill');
-    if (!latencyPill) return;
-
-    // Giả lập độ trễ mạng dao động thực tế 110ms - 135ms
-    setInterval(function () {
-      var lat = 115 + Math.floor(Math.random() * 20);
-      latencyPill.textContent = 'Độ trễ: ' + lat + 'ms';
-    }, 4000);
-  }
-
-  // Khởi chạy khi DOM sẵn sàng
+  /* =========================================================================
+     4. INITIALISATION
+     ========================================================================= */
   document.addEventListener('DOMContentLoaded', function () {
-    renderCompartments();
     setupResetTrash();
     setupConfigSliders();
-    setupUptimeTicker();
-    setupMobileVisionSimulation();
+
+    Promise.all([loadConfigs(), loadCompartments(), loadHardwareInfo()])
+      .catch(function (err) {
+        notify('Không thể tải dữ liệu thiết bị: ' + err.message);
+      });
   });
 })();

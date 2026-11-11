@@ -19,6 +19,9 @@
   <link rel="stylesheet" href="assets/css/thiet-bi.css">
   <link rel="stylesheet" href="assets/css/esp32-connect.css">
 
+  <!-- Runtime API/WebSocket config (must load before common.js) -->
+  <script src="assets/js/config.js" defer></script>
+
   <!-- Scripts -->
   <script src="assets/js/common.js" defer></script>
   <script src="assets/js/sidebar.js" defer></script>
@@ -155,7 +158,7 @@
             <div class="row"><span>Kết nối gần nhất</span><b id="lastSeen">--</b></div>
             <div class="row">
               <span>Sóng WiFi</span>
-              <b><span class="wifi"><i></i><i></i><i></i><i></i></span>-54 dBm</b>
+              <b><span class="wifi"><i></i><i></i><i></i><i></i></span><span id="wifiRssi">-54 dBm</span></b>
             </div>
             <div class="row"><span>Thời gian hoạt động</span><b id="uptime">--</b></div>
             <div class="row"><span>Phiên bản firmware</span><b>v1.0.3</b></div>

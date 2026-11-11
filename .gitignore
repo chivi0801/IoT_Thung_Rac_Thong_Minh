@@ -1,0 +1,22 @@
+# Build artifacts
+target/
+build/
+
+# Runtime uploads / snapshots
+uploads/
+
+# IDE / editor
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Environment & logs
+.env
+.env.*
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

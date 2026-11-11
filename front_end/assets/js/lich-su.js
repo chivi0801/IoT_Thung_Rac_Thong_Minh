@@ -1,83 +1,14 @@
 /**
  * ==========================================================================
  * LỊCH SỬ JAVASCRIPT (lich-su.js)
- * Quản lý bộ dữ liệu lịch sử phân loại, lọc theo danh mục,
- * phân trang Desktop và chế độ hiển thị Mobile Cards khớp 100% ảnh mẫu.
+ * Nạp lịch sử phân loại từ REST API, lọc theo danh mục, phân trang Desktop
+ * và tải thêm dần trên Mobile; xem ảnh snapshot AI qua modal.
  * ==========================================================================
  */
 
 (function () {
   'use strict';
 
-  // 5 bản ghi đầu tiên khớp chính xác 100% với giao diện Mobile trong ảnh mẫu:
-  // 1. Chai nhựa PET  [NHỰA]     10:24:15 • Cửa nạp #1  [✓ ĐÃ GẠT]
-  // 2. Lon nước ngọt  [KIM LOẠI] 10:18:02 • Cửa nạp #1  [✓ ĐÃ GẠT]
-  // 3. Vỏ chuối       [HỮU CƠ]   10:05:40 • Cửa nạp #2  [✓ ĐÃ GẠT]
-  // 4. Cốc dùng 1 lần [NHỰA]     09:52:11 • Cửa nạp #1  [✓ ĐÃ GẠT]
-  // 5. Hộp thiếc      [KIM LOẠI] 09:40:30 • Cửa nạp #1  [✓ ĐÃ GẠT]
-
-  var baseRecords = [
-    { time: '10:24:15', category: 'NHỰA', catKey: 'nhua', port: 'Cửa nạp #1', modelClass: 'plastic_bottle', conf: '96.4%', icon: 'bottle' },
-    { time: '10:18:02', category: 'KIM LOẠI', catKey: 'kim-loai', port: 'Cửa nạp #1', modelClass: 'can_metal', conf: '94.2%', icon: 'can' },
-    { time: '10:05:40', category: 'HỮU CƠ', catKey: 'huu-co', port: 'Cửa nạp #2', modelClass: 'banana_peel', conf: '98.1%', icon: 'organic' },
-    { time: '09:52:11', category: 'NHỰA', catKey: 'nhua', port: 'Cửa nạp #1', modelClass: 'plastic_cup', conf: '91.5%', icon: 'cup' },
-    { time: '09:40:30', category: 'KIM LOẠI', catKey: 'kim-loai', port: 'Cửa nạp #1', modelClass: 'tin_box', conf: '95.8%', icon: 'box' },
-    { time: '09:25:14', category: 'HỮU CƠ', catKey: 'huu-co', port: 'Cửa nạp #2', modelClass: 'apple_core', conf: '97.3%', icon: 'organic' }
-  ];
-
-  // Khởi tạo dataset 128 bản ghi (phù hợp với ghi chú "128 THAO TÁC CƠ KHÍ" trên mobile)
-  var TOTAL_RECORDS = 128;
-  var fullDataset = baseRecords.slice();
-  var curHour = 9, curMin = 20;
-
-  var idxN = 0, idxK = 0, idxH = 0;
-  while (fullDataset.length < TOTAL_RECORDS) {
-    curMin -= 3;
-    if (curMin < 0) {
-      curMin += 60;
-      curHour -= 1;
-      if (curHour < 0) curHour = 23;
-    }
-    var timeStr = ('0' + curHour).slice(-2) + ':' + ('0' + curMin).slice(-2) + ':' + ('0' + Math.floor(Math.random() * 59)).slice(-2);
-    var rand = Math.random();
-
-    if (rand < 0.45) {
-      idxN++;
-      fullDataset.push({
-        time: timeStr,
-        category: 'NHỰA',
-        catKey: 'nhua',
-        port: 'Cửa nạp #1',
-        modelClass: 'plastic_' + (idxN % 6),
-        conf: (90 + Math.random() * 8).toFixed(1) + '%',
-        icon: idxN % 2 === 0 ? 'bottle' : 'cup'
-      });
-    } else if (rand < 0.72) {
-      idxK++;
-      fullDataset.push({
-        time: timeStr,
-        category: 'KIM LOẠI',
-        catKey: 'kim-loai',
-        port: 'Cửa nạp #1',
-        modelClass: 'metal_' + (idxK % 5),
-        conf: (91 + Math.random() * 7).toFixed(1) + '%',
-        icon: idxK % 2 === 0 ? 'can' : 'box'
-      });
-    } else {
-      idxH++;
-      fullDataset.push({
-        time: timeStr,
-        category: 'HỮU CƠ',
-        catKey: 'huu-co',
-        port: 'Cửa nạp #2',
-        modelClass: 'organic_' + (idxH % 5),
-        conf: (92 + Math.random() * 7).toFixed(1) + '%',
-        icon: 'organic'
-      });
-    }
-  }
-
-  // Biểu tượng SVG cho từng loại vật thể (khớp chính xác hình dạng trên ảnh mẫu)
   var svgIcons = {
     bottle: '<path d="M8 2h8v3H8zM6 5h12v2H6zM5 7h14v12a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V7z"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>',
     cup: '<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/>',
@@ -92,49 +23,57 @@
     'huu-co': { stroke: '#10b981', tagBg: '#059669' }
   };
 
-  // State
   var currentFilter = 'ALL';
   var desktopPage = 1;
   var desktopPageSize = 6;
-  var mobileLimit = 5; // Mặc định hiển thị đúng 5 thẻ trên mobile theo ảnh mẫu
-  var filteredList = fullDataset;
+  var mobileLimit = 5;
+  var desktopItems = [];
 
   function $(id) {
     return document.getElementById(id);
   }
 
-  function updateFilteredData() {
-    if (currentFilter === 'ALL') {
-      filteredList = fullDataset;
-    } else {
-      filteredList = fullDataset.filter(function (x) {
-        return x.category === currentFilter;
-      });
+  function notify(msg) {
+    if (window.SmartBin && typeof window.SmartBin.toast === 'function') {
+      window.SmartBin.toast(msg);
     }
-    desktopPage = 1;
-    mobileLimit = 5;
-    render();
+  }
+
+  function setText(id, value) {
+    var el = $(id);
+    if (el) el.textContent = value;
+  }
+
+  function confidenceLevel(row) {
+    var val = row.confVal != null ? row.confVal : 0;
+    if (val >= 90) return 'CAO';
+    if (val >= 70) return 'TRUNG BÌNH';
+    return 'THẤP';
+  }
+
+  function categoryShortLabel(filter) {
+    if (filter === 'NHỰA') return 'Nhựa';
+    if (filter === 'KIM LOẠI') return 'Kim loại';
+    if (filter === 'HỮU CƠ' || filter === 'GIẤY') return 'Giấy';
+    return 'Tất cả';
   }
 
   /* =========================================================================
-     1. DESKTOP RENDER: BẢNG 5 CỘT & PHÂN TRANG
+     1. DESKTOP TABLE & PAGINATION
      ========================================================================= */
-  function renderDesktopTable() {
+  function renderDesktopTable(pageData) {
     var tbody = $('historyTableBody');
     if (!tbody) return;
 
-    var startIdx = (desktopPage - 1) * desktopPageSize;
-    var endIdx = Math.min(startIdx + desktopPageSize, filteredList.length);
-    var pageItems = filteredList.slice(startIdx, endIdx);
+    desktopItems = pageData.items || [];
 
     var html = '';
-    pageItems.forEach(function (row, idx) {
-      var realIndex = startIdx + idx;
+    desktopItems.forEach(function (row) {
       html += '<tr>' +
-        '<td><div class="time-cell"><span class="time-dot"></span>' + row.time + '</div></td>' +
+        '<td><div class="time-cell"><span class="time-dot"></span>' + (row.time || '--') + '</div></td>' +
         '<td><span class="cat-tag ' + row.catKey + '">[' + row.category + ']</span></td>' +
         '<td>' +
-          '<button class="btn-thumb" data-index="' + realIndex + '" title="Xem ảnh AI nhận diện">' +
+          '<button class="btn-thumb" data-id="' + row.id + '" title="Xem ảnh AI nhận diện">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
               '<rect x="3" y="3" width="18" height="18" rx="2"/>' +
               '<circle cx="8.5" cy="8.5" r="1.5"/>' +
@@ -145,72 +84,71 @@
         '<td>' +
           '<span class="pill-status">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>' +
-            'ĐÃ PHÂN LOẠI' +
+            (row.status || 'ĐÃ PHÂN LOẠI') +
           '</span>' +
         '</td>' +
         '<td>' +
-          '<span class="pill-conf">' +
+          '<span class="pill-conf" title="' + (row.conf || '') + '">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>' +
-            'CAO' +
+            confidenceLevel(row) +
           '</span>' +
         '</td>' +
       '</tr>';
     });
 
-    if (pageItems.length === 0) {
+    if (desktopItems.length === 0) {
       html = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--mut);">Không có bản ghi nào.</td></tr>';
     }
 
     tbody.innerHTML = html;
 
-    var total = filteredList.length;
-    var displayStart = total > 0 ? (startIdx + 1) : 0;
-    var displayEnd = endIdx;
+    var total = pageData.totalElements || 0;
+    var page = pageData.currentPage || 1;
+    var size = pageData.pageSize || desktopPageSize;
+    var displayStart = total > 0 ? (page - 1) * size + 1 : 0;
+    var displayEnd = (page - 1) * size + desktopItems.length;
 
-    var startEl = $('pageStart');
-    var endEl = $('pageEnd');
-    var totalEl = $('pageTotal');
-
-    if (startEl) startEl.textContent = displayStart;
-    if (endEl) endEl.textContent = displayEnd;
-    if (totalEl) totalEl.textContent = total;
+    setText('pageStart', displayStart);
+    setText('pageEnd', displayEnd);
+    setText('pageTotal', total);
   }
 
-  function renderDesktopPagination() {
+  function renderDesktopPagination(pageData) {
     var container = $('paginationControls');
     if (!container) return;
 
-    var totalPages = Math.ceil(filteredList.length / desktopPageSize) || 1;
+    var totalPages = pageData.totalPages || 1;
+    var page = pageData.currentPage || 1;
     var html = '';
 
-    html += '<button class="page-btn" id="btnPrev" ' + (desktopPage <= 1 ? 'disabled' : '') + '>&lt; Trang trước</button>';
+    html += '<button class="page-btn" id="btnPrev" ' + (page <= 1 ? 'disabled' : '') + '>&lt; Trang trước</button>';
 
     for (var p = 1; p <= totalPages; p++) {
-      if (totalPages <= 7 || p === 1 || p === totalPages || (p >= desktopPage - 1 && p <= desktopPage + 1)) {
-        html += '<button class="page-btn ' + (p === desktopPage ? 'active' : '') + '" data-page="' + p + '">' + p + '</button>';
-      } else if (p === desktopPage - 2 || p === desktopPage + 2) {
+      if (totalPages <= 7 || p === 1 || p === totalPages || (p >= page - 1 && p <= page + 1)) {
+        html += '<button class="page-btn ' + (p === page ? 'active' : '') + '" data-page="' + p + '">' + p + '</button>';
+      } else if (p === page - 2 || p === page + 2) {
         html += '<span style="color:var(--mut);padding:0 4px;">...</span>';
       }
     }
 
-    html += '<button class="page-btn" id="btnNext" ' + (desktopPage >= totalPages ? 'disabled' : '') + '>Trang sau &gt;</button>';
+    html += '<button class="page-btn" id="btnNext" ' + (page >= totalPages ? 'disabled' : '') + '>Trang sau &gt;</button>';
     container.innerHTML = html;
   }
 
   /* =========================================================================
-     2. MOBILE RENDER: THẺ CARD KHỚP 100% ẢNH MẪU SMARTPHONE
+     2. MOBILE CARDS
      ========================================================================= */
-  function renderMobileCards() {
+  function renderMobileCards(pageData) {
     var container = $('mobileCardsList');
     if (!container) return;
 
-    var shownItems = filteredList.slice(0, mobileLimit);
+    var items = pageData.items || [];
     var html = '';
 
-    shownItems.forEach(function (row, idx) {
+    items.forEach(function (row) {
       var iconMarkup = svgIcons[row.icon] || svgIcons.bottle;
 
-      html += '<div class="mobile-history-card" data-index="' + idx + '">' +
+      html += '<div class="mobile-history-card" data-id="' + row.id + '">' +
         '<div class="card-left">' +
           '<div class="card-thumb ' + row.catKey + '">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
@@ -219,11 +157,11 @@
           '</div>' +
           '<div class="card-info">' +
             '<div class="card-name-row">' +
-              '<span class="card-item-name">' + (row.category === 'NHỰA' ? 'Rác Nhựa' : (row.category === 'KIM LOẠI' ? 'Rác Kim loại' : 'Rác Hữu cơ')) + '</span>' +
+              '<span class="card-item-name">' + (row.category === 'NHỰA' ? 'Rác Nhựa' : (row.category === 'KIM LOẠI' ? 'Rác Kim loại' : 'Rác Giấy')) + '</span>' +
               '<span class="cat-tag ' + row.catKey + '">' + row.category + '</span>' +
             '</div>' +
             '<div class="card-meta">' +
-              '<span>' + row.time + '</span> • <span>' + row.port + '</span>' +
+              '<span>' + (row.time || '--') + '</span> • <span>' + (row.port || '') + '</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -233,115 +171,151 @@
               '<path d="M18 6L7 17l-5-5"/>' +
               '<path d="M22 10l-7.5 7.5-2-2"/>' +
             '</svg>' +
-            '<span>[✓ ĐÃ GẠT]</span>' +
+            '<span>[' + (row.status || 'ĐÃ PHÂN LOẠI') + ']</span>' +
           '</span>' +
           '<svg class="chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>' +
         '</div>' +
       '</div>';
     });
 
-    if (shownItems.length === 0) {
+    if (items.length === 0) {
       html = '<div style="text-align:center;padding:28px;color:var(--mut);background:#fff;border-radius:16px;">Không tìm thấy bản ghi phù hợp.</div>';
     }
 
     container.innerHTML = html;
 
-    // Cập nhật text số lượng trên mobile
-    var curShown = shownItems.length;
-    var totalCount = filteredList.length;
+    var shown = items.length;
+    var total = pageData.totalElements || 0;
 
-    var subheadText = $('subheadCountText');
-    if (subheadText) subheadText.textContent = curShown + ' / ' + totalCount + ' MỤC';
+    setText('subheadCountText', shown + ' / ' + total + ' MỤC');
+    setText('mobileShownCount', shown);
+    setText('mobileTotalCount', total);
 
-    var shownCountEl = $('mobileShownCount');
-    if (shownCountEl) shownCountEl.textContent = curShown;
-
-    var totalCountEl = $('mobileTotalCount');
-    if (totalCountEl) totalCountEl.textContent = totalCount;
-
-    // Ẩn nút "Tải thêm" nếu đã hiển thị hết
     var btnLoad = $('btnLoadMore');
     if (btnLoad) {
-      btnLoad.style.display = curShown >= totalCount ? 'none' : 'flex';
+      btnLoad.style.display = shown >= total ? 'none' : 'flex';
     }
   }
 
-  function render() {
-    renderDesktopTable();
-    renderDesktopPagination();
-    renderMobileCards();
+  /* =========================================================================
+     3. CATEGORY COUNTERS
+     ========================================================================= */
+  function updateCategoryCounts(counts) {
+    if (!counts) return;
+
+    setText('totalBadgeCount', counts['ALL'] != null ? counts['ALL'] : 0);
+
+    document.querySelectorAll('.filter-btn').forEach(function (btn) {
+      var filter = btn.dataset.filter;
+      var count = counts[filter];
+      if (count == null && filter === 'GIẤY') {
+        count = counts['HỮU CƠ'];
+      }
+      count = count != null ? count : 0;
+      var label = categoryShortLabel(filter);
+
+      var span = btn.querySelector('span');
+      if (span) {
+        span.textContent = label + ' (' + count + ')';
+      } else {
+        btn.textContent = label + ' (' + count + ')';
+      }
+    });
   }
 
   /* =========================================================================
-     3. MODAL XEM ẢNH CAMERA AI
+     4. DATA LOADING
      ========================================================================= */
-  function openImageModal(item) {
-    var col = colorSettings[item.catKey] || colorSettings.nhua;
-
-    var modalAiClass = $('modalAiClass');
-    var modalAiConf = $('modalAiConf');
-    var modalAiTag = $('modalAiTag');
-    var modalAiBox = $('modalAiBox');
-    var modalAiIcon = $('modalAiIcon');
-
-    if (modalAiClass) modalAiClass.textContent = item.modelClass;
-    if (modalAiConf) modalAiConf.textContent = item.conf;
-    if (modalAiTag) modalAiTag.style.background = col.tagBg;
-    if (modalAiBox) modalAiBox.style.borderColor = col.stroke;
-    if (modalAiIcon) modalAiIcon.style.stroke = col.stroke;
-
-    var modalCategory = $('modalCategory');
-    if (modalCategory) modalCategory.textContent = item.category + ' (' + item.port + ')';
-
-    var modalTimestamp = $('modalTimestamp');
-    if (modalTimestamp) modalTimestamp.textContent = item.time;
-
-    var modalConfidence = $('modalConfidence');
-    if (modalConfidence) modalConfidence.textContent = item.conf + ' (CAO)';
-
-    var imageModal = $('imageModal');
-    if (imageModal) imageModal.classList.add('open');
+  function historyUrl(page, size) {
+    return '/history?page=' + page + '&size=' + size + '&category=' + encodeURIComponent(currentFilter);
   }
 
-  // Khởi tạo các sự kiện khi DOM tải xong
+  function loadDesktop() {
+    return window.SmartBin.request(historyUrl(desktopPage, desktopPageSize))
+      .then(function (pageData) {
+        renderDesktopTable(pageData);
+        renderDesktopPagination(pageData);
+        updateCategoryCounts(pageData.categoryCounts);
+      });
+  }
+
+  function loadMobile() {
+    return window.SmartBin.request(historyUrl(1, mobileLimit))
+      .then(function (pageData) {
+        renderMobileCards(pageData);
+      });
+  }
+
+  function loadAll() {
+    return Promise.all([loadDesktop(), loadMobile()]);
+  }
+
+  /* =========================================================================
+     5. SNAPSHOT MODAL
+     ========================================================================= */
+  function openSnapshot(id) {
+    window.SmartBin.request('/history/' + id + '/snapshot')
+      .then(function (data) {
+        if (!data) return;
+
+        var col = colorSettings[data.catKey] || colorSettings.nhua;
+
+        setText('modalAiClass', data.modelClass || 'unknown');
+        setText('modalAiConf', data.conf || '--');
+        setText('modalCategory', data.category || '--');
+        setText('modalTimestamp', data.time || '--');
+        setText('modalConfidence', data.confidenceLevel || data.conf || '--');
+
+        var modalAiTag = $('modalAiTag');
+        var modalAiBox = $('modalAiBox');
+        var modalAiIcon = $('modalAiIcon');
+
+        if (modalAiTag) modalAiTag.style.background = col.tagBg;
+        if (modalAiBox) modalAiBox.style.borderColor = col.stroke;
+        if (modalAiIcon) modalAiIcon.style.stroke = col.stroke;
+
+        var imageModal = $('imageModal');
+        if (imageModal) imageModal.classList.add('open');
+      })
+      .catch(function (err) {
+        notify('Không thể tải ảnh nhận diện: ' + err.message);
+      });
+  }
+
+  /* =========================================================================
+     6. INITIALISATION
+     ========================================================================= */
+  function applyFilter(filter) {
+    currentFilter = filter;
+    desktopPage = 1;
+    mobileLimit = 5;
+
+    document.querySelectorAll('.filter-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.filter === filter);
+    });
+
+    loadAll().catch(function (err) {
+      notify('Không thể tải lịch sử: ' + err.message);
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
-    // Lọc trên Desktop Tabs
     var desktopFilter = document.querySelector('.filter-card');
     if (desktopFilter) {
       desktopFilter.addEventListener('click', function (e) {
         var btn = e.target.closest('.filter-btn');
-        if (!btn) return;
-
-        document.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
-        var filterVal = btn.dataset.filter;
-        document.querySelectorAll('.filter-btn[data-filter="' + filterVal + '"]').forEach(function (b) {
-          b.classList.add('active');
-        });
-
-        currentFilter = filterVal;
-        updateFilteredData();
+        if (btn) applyFilter(btn.dataset.filter);
       });
     }
 
-    // Lọc trên Mobile Tabs
     var mobileFilter = document.querySelector('.mobile-filter-tabs');
     if (mobileFilter) {
       mobileFilter.addEventListener('click', function (e) {
         var btn = e.target.closest('.filter-btn');
-        if (!btn) return;
-
-        document.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
-        var filterVal = btn.dataset.filter;
-        document.querySelectorAll('.filter-btn[data-filter="' + filterVal + '"]').forEach(function (b) {
-          b.classList.add('active');
-        });
-
-        currentFilter = filterVal;
-        updateFilteredData();
+        if (btn) applyFilter(btn.dataset.filter);
       });
     }
 
-    // Phân trang Desktop
     var paginationControls = $('paginationControls');
     if (paginationControls) {
       paginationControls.addEventListener('click', function (e) {
@@ -351,55 +325,44 @@
         if (btn.id === 'btnPrev') {
           if (desktopPage > 1) {
             desktopPage--;
-            render();
+            loadDesktop().catch(function (err) { notify(err.message); });
           }
         } else if (btn.id === 'btnNext') {
-          var totalPages = Math.ceil(filteredList.length / desktopPageSize);
-          if (desktopPage < totalPages) {
-            desktopPage++;
-            render();
-          }
+          desktopPage++;
+          loadDesktop().catch(function (err) { notify(err.message); });
         } else if (btn.dataset.page) {
           desktopPage = parseInt(btn.dataset.page, 10);
-          render();
+          loadDesktop().catch(function (err) { notify(err.message); });
         }
       });
     }
 
-    // Click nút thumbnail trên bảng Desktop
     var tbody = $('historyTableBody');
     if (tbody) {
       tbody.addEventListener('click', function (e) {
         var thumb = e.target.closest('.btn-thumb');
         if (!thumb) return;
-        var idx = parseInt(thumb.dataset.index, 10);
-        var item = filteredList[idx];
-        if (item) openImageModal(item);
+        openSnapshot(thumb.dataset.id);
       });
     }
 
-    // Click vào Card trên Mobile
     var mobileCardsList = $('mobileCardsList');
     if (mobileCardsList) {
       mobileCardsList.addEventListener('click', function (e) {
         var card = e.target.closest('.mobile-history-card');
         if (!card) return;
-        var idx = parseInt(card.dataset.index, 10);
-        var item = filteredList[idx];
-        if (item) openImageModal(item);
+        openSnapshot(card.dataset.id);
       });
     }
 
-    // Nút [Tải thêm bản ghi] trên Mobile
     var btnLoadMore = $('btnLoadMore');
     if (btnLoadMore) {
       btnLoadMore.addEventListener('click', function () {
         mobileLimit += 5;
-        renderMobileCards();
+        loadMobile().catch(function (err) { notify(err.message); });
       });
     }
 
-    // Đóng Modal
     var modalClose = $('modalClose');
     var imageModal = $('imageModal');
 
@@ -417,7 +380,8 @@
       });
     }
 
-    // Khởi động render ban đầu
-    updateFilteredData();
+    loadAll().catch(function (err) {
+      notify('Không thể tải lịch sử: ' + err.message);
+    });
   });
 })();
