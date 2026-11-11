@@ -34,7 +34,7 @@ public class HistoryService {
     private static final String CATEGORY_ALL = "ALL";
     private static final String CATEGORY_PLASTIC = "NHỰA";
     private static final String CATEGORY_METAL = "KIM LOẠI";
-    private static final String CATEGORY_ORGANIC = "HỮU CƠ";
+    private static final String CATEGORY_PAPER = "GIẤY";
 
     private static final String CAT_KEY_PLASTIC = "nhua";
     private static final String CAT_KEY_METAL = "kim-loai";
@@ -140,7 +140,7 @@ public class HistoryService {
         counts.put(CATEGORY_ALL, wasteLogRepository.count());
         counts.put(CATEGORY_PLASTIC, wasteLogRepository.countByCategoryIgnoreCase(CATEGORY_PLASTIC));
         counts.put(CATEGORY_METAL, wasteLogRepository.countByCategoryIgnoreCase(CATEGORY_METAL));
-        counts.put(CATEGORY_ORGANIC, wasteLogRepository.countByCategoryIgnoreCase(CATEGORY_ORGANIC));
+        counts.put(CATEGORY_PAPER, wasteLogRepository.countByCategoryIgnoreCase(CATEGORY_PAPER));
         return counts;
     }
 
@@ -182,7 +182,7 @@ public class HistoryService {
         }
         return switch (catKey) {
             case CAT_KEY_METAL -> CATEGORY_METAL;
-            case CAT_KEY_ORGANIC -> CATEGORY_ORGANIC;
+            case CAT_KEY_ORGANIC -> CATEGORY_PAPER;
             default -> CATEGORY_PLASTIC;
         };
     }
