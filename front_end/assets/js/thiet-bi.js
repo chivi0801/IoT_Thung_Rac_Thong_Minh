@@ -9,23 +9,18 @@
 (function () {
   'use strict';
 
-  // Dữ liệu mẫu mô phỏng từ vi điều khiển ESP32
+  // Dữ liệu thực từ ESP32 qua Flask endpoint /api/bins.
   var cps = [
-    { id: 1, key: 'pl', name: 'NGĂN SỐ 1 · NHỰA', level: 86, count: 38, dist: 5.6 },
-    { id: 2, key: 'me', name: 'NGĂN SỐ 2 · KIM LOẠI', level: 42, count: 21, dist: 17.4 },
-    { id: 3, key: 'or', name: 'NGĂN SỐ 3 · HỮU CƠ', level: 63, count: 27, dist: 11.1 }
-  ];
-
-  var CAP = 30; // Chiều sâu ngăn rác (cm) để quy đổi khoảng cách siêu âm -> %
-
-  var alerts = [
-    { t: '10:15', lv: 'warn', m: 'Ngăn 1 (Nhựa) đạt 80%', s: 'Vượt ngưỡng cảnh báo' },
-    { t: '09:48', lv: 'info', m: 'Ngăn 2 (Kim loại) đã được đổ rác', s: 'Mức đầy về 5%' },
-    { t: '09:12', lv: 'warn', m: 'Độ tin cậy thấp (52%)', s: 'Vật thể chưa được phân loại' }
+    { id: 1, key: 'or', sensorName: 'giay', name: 'NGĂN SỐ 1 · GIẤY', level: null, distanceMm: null, sensorOk: false },
+    { id: 2, key: 'pl', sensorName: 'nhua', name: 'NGĂN SỐ 2 · NHỰA', level: null, distanceMm: null, sensorOk: false },
+    { id: 3, key: 'me', sensorName: 'kim_loai', name: 'NGĂN SỐ 3 · KIM LOẠI', level: null, distanceMm: null, sensorOk: false }
   ];
 
   var cfgDef = { full: 80, conf: 60 };
   var cfg = { full: 80, conf: 60 };
+  var polling = false;
+  var latestPredictionPolling = false;
+  var latestBatchId = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -42,7 +37,9 @@
     return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
   }
 
-  function getCompartmentStatus(level) {
+  function getCompartmentStatus(compartment) {
+    if (!compartment.sensorOk || compartment.level === null) return { c: 'unknown', t: 'CHƯA CÓ SỐ ĐO' };
+    var level = compartment.level;
     if (level >= 95) return { c: 'bad', t: 'ĐẦY' };
     if (level >= cfg.full) return { c: 'warn', t: 'SẮP ĐẦY' };
     return { c: 'ok', t: 'BÌNH THƯỜNG' };
@@ -59,22 +56,27 @@
     var html = '';
 
     cps.forEach(function (c) {
-      var st = getCompartmentStatus(c.level);
+      var st = getCompartmentStatus(c);
       if (st.c !== 'ok') {
-        full.push('Ngăn ' + c.id + ' ' + (st.c === 'bad' ? 'đã đầy' : 'sắp đầy (' + c.level + '%)'));
+        if (st.c === 'bad' || st.c === 'warn') {
+          full.push('Ngăn ' + c.id + ' ' + (st.c === 'bad' ? 'đã đầy' : 'sắp đầy (' + c.level + '%)'));
+        }
       }
+      var levelText = c.level === null ? '—' : c.level;
+      var levelWidth = c.level === null ? 0 : c.level;
+      var distanceText = c.distanceMm === null ? '—' : (c.distanceMm / 10).toFixed(1) + ' cm';
+      var sensorText = !c.sensorOk ? 'Không phản hồi' : (c.level === null ? 'Chưa có số đo' : 'Đang hoạt động');
 
       html += '<article id="ngan-' + c.id + '" class="card cp ' + c.key + '">' +
         '<h3>' + c.name + '</h3>' +
-        '<div class="big mono">' + c.level + '<small>%</small></div>' +
+        '<div class="big mono">' + levelText + (c.level === null ? '' : '<small>%</small>') + '</div>' +
         '<span class="pill s-' + st.c + '">' + st.t + '</span>' +
-        '<div class="bar ' + (st.c === 'ok' ? '' : st.c) + '" role="progressbar" aria-valuenow="' + c.level + '" aria-valuemin="0" aria-valuemax="100">' +
-          '<span style="width:' + c.level + '%"></span>' +
+        '<div class="bar ' + (st.c === 'ok' ? '' : st.c) + '" role="progressbar" aria-valuenow="' + levelWidth + '" aria-valuemin="0" aria-valuemax="100">' +
+          '<span style="width:' + levelWidth + '%"></span>' +
         '</div>' +
         '<div class="scale"><span>0%</span><span>' + cfg.full + '%</span><span>100%</span></div>' +
-        '<div class="meta"><span>Số vật thể</span><b>' + c.count + '</b></div>' +
-        '<div class="meta" style="margin-top:-6px;border:0;padding:0"><span>Cách miệng thùng</span><b>' + c.dist.toFixed(1) + ' cm</b></div>' +
-        '<button class="btn" style="margin-top:16px" data-id="' + c.id + '">Đã đổ rác</button>' +
+        '<div class="meta"><span>Cách cảm biến</span><b>' + distanceText + '</b></div>' +
+        '<div class="meta" style="margin-top:-6px;border:0;padding:0"><span>Cảm biến</span><b>' + sensorText + '</b></div>' +
       '</article>';
     });
 
@@ -90,38 +92,97 @@
     }
   }
 
-  /**
-   * Đặt lại ngăn rác sau khi người dùng bấm Đã đổ rác
-   */
-  function setupResetTrash() {
-    var cpsEl = $('cps');
-    if (!cpsEl) return;
+  function pollBinReadings() {
+    if (polling) return;
+    polling = true;
+    fetch('/api/bins', { cache: 'no-store' })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        if (!payload || !Array.isArray(payload.bins)) throw new Error('Dữ liệu cảm biến không hợp lệ');
+        var readings = {};
+        payload.bins.forEach(function (item) { readings[item.name] = item; });
+        cps.forEach(function (c) {
+          var reading = readings[c.sensorName];
+          c.sensorOk = !!(reading && reading.sensor_ok);
+          c.level = c.sensorOk && reading.fill_percent !== null && reading.fill_percent !== undefined && Number.isFinite(Number(reading.fill_percent)) ?
+            Math.max(0, Math.min(100, Number(reading.fill_percent))) : null;
+          c.distanceMm = c.sensorOk && reading.distance_mm !== null && reading.distance_mm !== undefined && Number.isFinite(Number(reading.distance_mm)) ?
+            Number(reading.distance_mm) : null;
+        });
+        var status = $('sensorConnection');
+        if (status) {
+          var readyCount = cps.filter(function (c) { return c.sensorOk; }).length;
+          status.textContent = 'ESP32 trực tuyến · ' + readyCount + '/3 cảm biến sẵn sàng · cập nhật ' +
+            new Date().toLocaleTimeString('vi-VN');
+          status.classList.toggle('offline', readyCount === 0);
+        }
+        renderCompartments();
+      })
+      .catch(function (error) {
+        var status = $('sensorConnection');
+        if (status) {
+          status.textContent = 'Không đọc được ESP32: ' + error.message;
+          status.classList.add('offline');
+        }
+      })
+      .finally(function () { polling = false; });
+  }
 
-    cpsEl.addEventListener('click', function (e) {
-      var btn = e.target.closest('button[data-id]');
-      if (!btn) return;
+  function pollLatestPrediction() {
+    if (latestPredictionPolling) return;
+    latestPredictionPolling = true;
+    fetch('/api/latest', { cache: 'no-store' })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        if (payload.status !== 'complete' || payload.batch_id === latestBatchId) return;
+        latestBatchId = payload.batch_id;
 
-      var c = cps[btn.dataset.id - 1];
-      if (!c) return;
+        var frame = $('liveFeedViewport');
+        var image = $('latestWasteImage');
+        var firstImage = (payload.images || []).find(function (item) {
+          return item.annotated_url || item.original_url;
+        });
+        if (frame && image && firstImage) {
+          image.hidden = false;
+          image.onload = function () { frame.classList.add('has-image'); };
+          image.onerror = function () { frame.classList.remove('has-image'); };
+          image.src = (firstImage.annotated_url || firstImage.original_url) + '?v=' + encodeURIComponent(payload.batch_id);
+        }
 
-      if (!confirm('Xác nhận đã đổ rác ngăn ' + c.id + '? Bộ đếm vật thể của ngăn sẽ về 0 (lịch sử vẫn giữ nguyên).')) {
-        return;
-      }
+        var types = {
+          can: { name: 'Rác kim loại', category: 'KIM LOẠI' },
+          bottle: { name: 'Rác nhựa', category: 'NHỰA' },
+          'paper cup': { name: 'Rác giấy', category: 'GIẤY' }
+        };
+        var type = types[payload.class_name] || { name: 'Chưa phân loại', category: 'CHƯA PHÂN LOẠI' };
+        var confidence = Number.isFinite(Number(payload.confidence)) ? (Number(payload.confidence) * 100).toFixed(1) + '%' : '--';
+        var receivedAt = payload.received_at ? new Date(payload.received_at).toLocaleString('vi-VN') : '--';
+        var targetName = $('targetObjectName');
+        var targetConfidence = $('targetAiConf');
+        var categoryBadge = $('valCategoryBadge');
+        var timestamp = $('valTimestamp');
+        var stepConfidence = $('stepConf2');
+        var flapStatus = document.querySelector('.success-badge');
 
-      c.level = 5;
-      c.count = 0;
-      c.dist = CAP * 0.95;
-
-      alerts.unshift({
-        t: formatNowTime(),
-        lv: 'info',
-        m: 'Ngăn ' + c.id + ' đã được đổ rác',
-        s: 'Mức đầy về 5%'
-      });
-
-      renderCompartments();
-      notify('Đã đặt lại ngăn ' + c.id);
-    });
+        if (targetName) targetName.textContent = type.name;
+        if (targetConfidence) targetConfidence.textContent = payload.success ? 'YOLO ' + confidence : (payload.error || 'Chưa phân loại');
+        if (categoryBadge) categoryBadge.textContent = type.category;
+        if (timestamp) timestamp.textContent = receivedAt;
+        if (stepConfidence) stepConfidence.textContent = payload.success ? 'YOLO ' + confidence : 'Chưa đạt đồng thuận';
+        if (flapStatus) flapStatus.textContent = payload.success ? 'ĐÃ GỬI LỆNH PHÂN LOẠI' : 'CHƯA PHÂN LOẠI';
+      })
+      .catch(function (error) {
+        var targetName = $('targetObjectName');
+        if (!latestBatchId && targetName) targetName.textContent = 'Đang chờ ESP32 gửi ảnh';
+        if (error && window.console) console.warn('Không đọc được kết quả ESP32:', error.message);
+      })
+      .finally(function () { latestPredictionPolling = false; });
   }
 
   /**
@@ -216,7 +277,10 @@
   // Khởi chạy khi DOM sẵn sàng
   document.addEventListener('DOMContentLoaded', function () {
     renderCompartments();
-    setupResetTrash();
+    pollBinReadings();
+    window.setInterval(pollBinReadings, 2000);
+    pollLatestPrediction();
+    window.setInterval(pollLatestPrediction, 2000);
     setupConfigSliders();
     setupUptimeTicker();
     setupMobileVisionSimulation();

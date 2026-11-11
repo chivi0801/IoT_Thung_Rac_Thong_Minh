@@ -9,63 +9,13 @@
 (function () {
   'use strict';
 
-  // Dữ liệu 4 hoạt động gần nhất (khớp chính xác với giao diện ảnh mẫu)
-  var recentActivities = [
-  {
-    time: '10:24:15',
-    category: 'NHỰA',
-    catKey: 'pl',
-    confidence: '96.4%',
-    confVal: 96.4,
-    status: 'Thành công',
-    modelClass: 'plastic_bottle',
-    iconType: 'bottle'
-  },
-  {
-    time: '10:18:02',
-    category: 'KIM LOẠI',
-    catKey: 'me',
-    confidence: '94.2%',
-    confVal: 94.2,
-    status: 'Thành công',
-    modelClass: 'can_metal',
-    iconType: 'can'
-  },
-  {
-    time: '10:05:40',
-    category: 'HỮU CƠ',
-    catKey: 'or',
-    confidence: '98.1%',
-    confVal: 98.1,
-    status: 'Thành công',
-    modelClass: 'banana_peel',
-    iconType: 'organic'
-  },
-  {
-    time: '09:52:11',
-    category: 'NHỰA',
-    catKey: 'pl',
-    confidence: '91.5%',
-    confVal: 91.5,
-    status: 'Thành công',
-    modelClass: 'milk_box',
-    iconType: 'box'
-  }
-];
-
-// Danh sách mở rộng mô phỏng các hoạt động trước đó
-var extendedActivities = [
-  { time: '09:35:04', category: 'NHỰA', catKey: 'pl', confidence: '97.2%', status: 'Thành công', modelClass: 'plastic_cup', iconType: 'bottle' },
-  { time: '09:20:18', category: 'KIM LOẠI', catKey: 'me', confidence: '92.0%', status: 'Thành công', modelClass: 'metal_cap', iconType: 'can' },
-  { time: '09:05:45', category: 'HỮU CƠ', catKey: 'or', confidence: '95.6%', status: 'Thành công', modelClass: 'apple_core', iconType: 'organic' },
-  { time: '08:50:12', category: 'NHỰA', catKey: 'pl', confidence: '89.4%', status: 'Thành công', modelClass: 'plastic_straw', iconType: 'bottle' },
-  { time: '08:42:30', category: 'KIM LOẠI', catKey: 'me', confidence: '95.1%', status: 'Thành công', modelClass: 'can_metal', iconType: 'can' },
-  { time: '08:30:15', category: 'HỮU CƠ', catKey: 'or', confidence: '94.8%', status: 'Thành công', modelClass: 'vegetable_scrap', iconType: 'organic' },
-  { time: '08:15:22', category: 'NHỰA', catKey: 'pl', confidence: '98.3%', status: 'Thành công', modelClass: 'plastic_bottle', iconType: 'bottle' },
-  { time: '08:02:40', category: 'KIM LOẠI', catKey: 'me', confidence: '93.7%', status: 'Thành công', modelClass: 'tin_can', iconType: 'can' }
-];
+  // Kết quả thật được nạp từ backend khi ESP32 gửi xong một batch ảnh.
+  var recentActivities = [];
+  var extendedActivities = [];
 
   var allActivities = recentActivities.concat(extendedActivities);
+  var lastBatchId = null;
+  var latestPollInProgress = false;
 
   // SVG Icons cho Camera preview
   var iconSvgs = {
@@ -98,6 +48,16 @@ var extendedActivities = [
     var tbody = $('activityTableBody');
     if (!tbody) return;
 
+    var displayed = $('displayedRows');
+    var total = $('totalRows');
+    if (displayed) displayed.textContent = String(recentActivities.length);
+    if (total) total.textContent = String(recentActivities.length);
+
+    if (recentActivities.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px">Đang chờ ESP32 gửi ảnh...</td></tr>';
+      return;
+    }
+
     var html = '';
     recentActivities.forEach(function (act, index) {
       html += '<tr data-index="' + index + '">' +
@@ -123,8 +83,8 @@ var extendedActivities = [
     var iconEl = $('aiIcon');
     var camConfText = $('camConfText');
 
-    if (labelClassEl) labelClassEl.textContent = act.modelClass;
-    if (labelConfEl) labelConfEl.textContent = act.confidence;
+    if (labelClassEl) labelClassEl.textContent = act.modelClass || 'Chưa phân loại';
+    if (labelConfEl) labelConfEl.textContent = act.confidence || '--';
     if (labelEl) labelEl.style.background = c.tagBg;
     if (boxEl) boxEl.style.borderColor = c.stroke;
 
@@ -133,23 +93,115 @@ var extendedActivities = [
       iconEl.style.stroke = c.stroke;
     }
 
-    if (camConfText) camConfText.textContent = 'ĐỘ TIN CẬY: ' + act.confidence;
+    if (camConfText) camConfText.textContent = 'ĐỘ TIN CẬY: ' + (act.confidence || '--');
 
     // Chi tiết dưới camera
     var detCat = $('detailCat');
     if (detCat) {
       detCat.className = 'badge-pill ' + act.catKey;
-      detCat.textContent = act.category;
+      detCat.textContent = act.category || 'CHƯA PHÂN LOẠI';
     }
 
     var detTime = $('detailTime');
     if (detTime) detTime.textContent = act.time;
 
     var detConf = $('detailConf');
-    if (detConf) detConf.textContent = act.confidence;
+    if (detConf) detConf.textContent = act.confidence || '--';
 
     var detStatus = $('detailStatus');
-    if (detStatus) detStatus.textContent = 'ĐÃ PHÂN LOẠI';
+    if (detStatus) detStatus.textContent = act.status || 'ĐÃ PHÂN LOẠI';
+  }
+
+  function showWaitingForEsp32(message) {
+    var viewport = $('cameraViewport');
+    var image = $('processedImage');
+    if (viewport) viewport.classList.remove('has-image');
+    if (image) {
+      image.hidden = true;
+      image.removeAttribute('src');
+    }
+    var indicator = $('camLiveIndicator');
+    if (indicator) indicator.textContent = 'ESP32 · CHỜ DỮ LIỆU';
+    var label = $('aiLabelClass');
+    if (label) label.textContent = message || 'Đang chờ ảnh từ ESP32';
+    var confidence = $('aiLabelConf');
+    if (confidence) confidence.textContent = '--';
+    var detailStatus = $('detailStatus');
+    if (detailStatus) detailStatus.textContent = 'ĐANG CHỜ';
+    var camConfidence = $('camConfText');
+    if (camConfidence) camConfidence.textContent = message || 'CHƯA NHẬN ẢNH';
+    var detailCategory = $('detailCat');
+    if (detailCategory) detailCategory.textContent = 'ĐANG CHỜ';
+    var detailTime = $('detailTime');
+    if (detailTime) detailTime.textContent = '--';
+    var detailConfidence = $('detailConf');
+    if (detailConfidence) detailConfidence.textContent = '--';
+  }
+
+  function displayLatestBatch(batch) {
+    if (batch.batch_id === lastBatchId) return;
+    lastBatchId = batch.batch_id;
+
+    var image = $('processedImage');
+    var viewport = $('cameraViewport');
+    var indicator = $('camLiveIndicator');
+    var firstImage = (batch.images || []).find(function (item) {
+      return item.annotated_url || item.original_url;
+    });
+    if (image && viewport && firstImage) {
+      image.hidden = false;
+      image.onload = function () { viewport.classList.add('has-image'); };
+      image.onerror = function () { viewport.classList.remove('has-image'); };
+      image.src = (firstImage.annotated_url || firstImage.original_url) + '?v=' + encodeURIComponent(batch.batch_id);
+    }
+
+    var className = batch.class_name || '';
+    var categoryMap = {
+      can: { category: 'KIM LOẠI', key: 'me', icon: 'can' },
+      bottle: { category: 'NHỰA', key: 'pl', icon: 'bottle' },
+      'paper cup': { category: 'GIẤY', key: 'or', icon: 'box' }
+    };
+    var mapped = categoryMap[className] || { category: 'CHƯA PHÂN LOẠI', key: 'pl', icon: 'bottle' };
+    var time = batch.received_at ? new Date(batch.received_at).toLocaleTimeString('vi-VN') : '--';
+    var confidence = Number.isFinite(Number(batch.confidence)) ? (Number(batch.confidence) * 100).toFixed(1) + '%' : '--';
+    var record = {
+      time: time,
+      category: mapped.category,
+      catKey: mapped.key,
+      confidence: confidence,
+      status: batch.success ? 'ĐÃ PHÂN LOẠI' : (batch.error || 'ĐÃ NHẬN ẢNH · CHƯA PHÂN LOẠI'),
+      modelClass: className || 'Chưa phân loại',
+      iconType: mapped.icon
+    };
+
+    if (indicator) indicator.textContent = batch.success ? 'ESP32 · ĐÃ XỬ LÝ' : 'ESP32 · ĐÃ NHẬN ẢNH';
+    var frameCount = $('frameCount');
+    if (frameCount) frameCount.textContent = (batch.frames_received || (batch.images || []).length || 0) + ' ảnh';
+    recentActivities = [record];
+    allActivities = recentActivities.slice();
+    renderRecentTable();
+    displayDetection(record);
+  }
+
+  function pollLatestBatch() {
+    if (latestPollInProgress) return;
+    latestPollInProgress = true;
+    fetch('/api/latest', { cache: 'no-store' })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        if (payload.status === 'waiting') {
+          if (!lastBatchId) showWaitingForEsp32(payload.message);
+          return;
+        }
+        if (payload.status === 'complete') displayLatestBatch(payload);
+      })
+      .catch(function () {
+        if (!lastBatchId) showWaitingForEsp32('Không kết nối được backend');
+      })
+      .finally(function () { latestPollInProgress = false; });
   }
 
   /**
@@ -217,7 +269,9 @@ var extendedActivities = [
   // Khởi tạo các sự kiện khi DOM tải xong
   document.addEventListener('DOMContentLoaded', function () {
     renderRecentTable();
-    displayDetection(recentActivities[0]);
+    showWaitingForEsp32('Đang chờ ảnh từ ESP32');
+    pollLatestBatch();
+    window.setInterval(pollLatestBatch, 2000);
 
     // Bấm vào dòng trong bảng để cập nhật khung camera
     var tbody = $('activityTableBody');
@@ -282,10 +336,11 @@ var extendedActivities = [
         btnRefresh.classList.add('spinning');
         btnRefresh.disabled = true;
 
+        pollLatestBatch();
         setTimeout(function () {
           btnRefresh.classList.remove('spinning');
           btnRefresh.disabled = false;
-          notify('Đã làm mới dữ liệu cảm biến thành công!');
+          notify('Đã yêu cầu cập nhật kết quả mới nhất từ server.');
         }, 700);
       });
     }

@@ -245,6 +245,29 @@
   pointer-events: none;
 }
 
+.processed-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--dark-cam);
+  z-index: 1;
+}
+
+.camera-frame.has-image .processed-image {
+  display: block;
+}
+
+.camera-frame.has-image .ai-bounding-box,
+.camera-frame.has-image .cam-confidence-label {
+  display: none;
+}
+
+.camera-frame.has-image .cam-live-indicator {
+  z-index: 2;
+}
+
 .ai-bounding-box {
   width: 140px;
   height: 135px;

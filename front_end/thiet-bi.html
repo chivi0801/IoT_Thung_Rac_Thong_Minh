@@ -116,6 +116,10 @@
           <span id="bannerTx"></span>
         </div>
 
+        <div class="sensor-connection" id="sensorConnection" role="status" aria-live="polite">
+          Đang kết nối ESP32 để nhận số đo...
+        </div>
+
         <!-- 3 Waste Compartments Grid -->
         <div class="grid g3" id="cps"></div>
 
@@ -183,6 +187,7 @@
 
         <!-- Live Camera Stream Frame -->
         <div class="live-camera-feed" id="liveFeedViewport">
+          <img id="latestWasteImage" class="latest-waste-image" alt="Ảnh mới nhất ESP32 gửi lên và AI xử lý" hidden>
           <!-- Top Overlay: REC + FPS -->
           <div class="cam-top-overlay">
             <div class="cam-rec-indicator">

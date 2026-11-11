@@ -202,13 +202,14 @@
               <span>KẾT QUẢ NHẬN DIỆN GẦN ĐÂY</span>
             </div>
 
-            <!-- Camera Stream Simulation with Target Bounding Box -->
+            <!-- Latest processed image batch received from ESP32 -->
             <div class="camera-frame" id="cameraViewport">
-              <div class="cam-live-indicator">ESP32 CAM</div>
+              <div class="cam-live-indicator" id="camLiveIndicator">ĐANG CHỜ ESP32</div>
+              <img id="processedImage" class="processed-image" alt="Ảnh gần nhất ESP32 gửi lên và AI đã xử lý" hidden>
               <div class="ai-bounding-box" id="aiBox">
                 <div class="ai-label-tag" id="aiLabel">
-                  <div id="aiLabelClass">plastic_bottle</div>
-                  <div id="aiLabelConf">96.4%</div>
+                  <div id="aiLabelClass">Đang chờ ảnh từ ESP32</div>
+                  <div id="aiLabelConf">--</div>
                 </div>
                 <svg id="aiIcon" class="ai-icon-target" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"
                   stroke-linejoin="round">
@@ -217,26 +218,26 @@
                   <path d="M12 11c-1 1.5-2 2.5-2 3.5a2 2 0 0 0 4 0c0-1-1-2-2-3.5Z" />
                 </svg>
               </div>
-              <div class="cam-confidence-label" id="camConfText">ĐỘ TIN CẬY: 96.4%</div>
+              <div class="cam-confidence-label" id="camConfText">CHƯA NHẬN ẢNH</div>
             </div>
 
             <!-- Detection Details List -->
             <div class="detail-box">
               <div class="detail-row">
                 <span class="detail-label">PHÂN LOẠI:</span>
-                <span class="badge-pill pl" id="detailCat">NHỰA</span>
+                <span class="badge-pill pl" id="detailCat">ĐANG CHỜ</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">THỜI GIAN:</span>
-                <b class="mono" id="detailTime">10:24:15</b>
+                <b class="mono" id="detailTime">--</b>
               </div>
               <div class="detail-row">
                 <span class="detail-label">ĐỘ TIN CẬY</span>
-                <b class="mono" id="detailConf">96.4%</b>
+                <b class="mono" id="detailConf">--</b>
               </div>
               <div class="detail-row">
                 <span class="detail-label">TRẠNG THÁI</span>
-                <span class="badge-status" id="detailStatus">ĐÃ PHÂN LOẠI</span>
+                <span class="badge-status" id="detailStatus">ĐANG CHỜ</span>
               </div>
             </div>
           </article>
@@ -272,7 +273,7 @@
             <!-- Activity Footer -->
             <div class="activity-footer">
               <div class="activity-count">
-                HIỂN THỊ: <b id="displayedRows">4</b> / <b id="totalRows">86</b> HOẠT ĐỘNG
+                HIỂN THỊ: <b id="displayedRows">0</b> / <b id="totalRows">0</b> HOẠT ĐỘNG
               </div>
               <div class="btn-group">
                 <button class="btn-action ghost" id="btnExportCsv" title="Tải xuống tệp CSV lịch sử hoạt động">
