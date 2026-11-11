@@ -380,7 +380,9 @@ public class StudentService {
             return CATEGORY_METAL;
         }
         if (normalized.contains("HỮU") || normalized.contains("HUU")
-                || normalized.contains("ORGANIC")) {
+                || normalized.contains("ORGANIC")
+                || normalized.contains("GIẤY") || normalized.contains("GIAY")
+                || normalized.contains("PAPER")) {
             return CATEGORY_ORGANIC;
         }
         return CATEGORY_PLASTIC;
@@ -391,7 +393,9 @@ public class StudentService {
         if (normalized.contains("KIM")) {
             return "metal";
         }
-        if (normalized.contains("HỮU") || normalized.contains("HUU")) {
+        if (normalized.contains("HỮU") || normalized.contains("HUU")
+                || normalized.contains("GIẤY") || normalized.contains("GIAY")
+                || normalized.contains("PAPER")) {
             return "organic";
         }
         if (!normalized.isBlank()) {
@@ -441,7 +445,7 @@ public class StudentService {
     private static String defaultItemName(String category) {
         return switch (category) {
             case CATEGORY_METAL -> "Lon nước ngọt vừa nạp";
-            case CATEGORY_ORGANIC -> "Vỏ chuối & thức ăn thừa vừa nạp";
+            case CATEGORY_ORGANIC -> "Ly giấy dùng 1 lần vừa nạp";
             default -> "Chai nhựa nước giải khát vừa nạp";
         };
     }
@@ -449,7 +453,7 @@ public class StudentService {
     private static String defaultModelClass(String category) {
         return switch (category) {
             case CATEGORY_METAL -> "can_metal";
-            case CATEGORY_ORGANIC -> "banana_peel";
+            case CATEGORY_ORGANIC -> "paper_cup";
             default -> "plastic_bottle";
         };
     }
@@ -457,7 +461,7 @@ public class StudentService {
     private static String defaultIcon(String category) {
         return switch (category) {
             case CATEGORY_METAL -> "can";
-            case CATEGORY_ORGANIC -> "organic";
+            case CATEGORY_ORGANIC -> "cup";
             default -> "bottle";
         };
     }

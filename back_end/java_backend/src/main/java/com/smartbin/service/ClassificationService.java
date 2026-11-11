@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -43,15 +44,19 @@ public class ClassificationService {
 
     private static final String PLASTIC = "NHỰA";
     private static final String METAL = "KIM LOẠI";
-    private static final String ORGANIC = "HỮU CƠ";
+    private static final String PAPER = "GIẤY";
 
     private static final String CAT_KEY_PLASTIC = "pl";
     private static final String CAT_KEY_METAL = "me";
-    private static final String CAT_KEY_ORGANIC = "or";
+    private static final String CAT_KEY_PAPER = "or";
 
     private static final int SERVO_PLASTIC = 90;
     private static final int SERVO_METAL = 180;
-    private static final int SERVO_ORGANIC = 0;
+    private static final int SERVO_PAPER = 0;
+
+    private static final int BIN_PLASTIC = 1;
+    private static final int BIN_METAL = 2;
+    private static final int BIN_PAPER = 3;
 
     private static final double CAP = 30.0;
 
@@ -71,19 +76,34 @@ public class ClassificationService {
     }
 
     /**
-     * Saves the frame and runs classification, returning the inference result.
+     * Saves a single frame and runs classification, returning the inference result.
      */
     public AiInferenceResult runInference(MultipartFile frameFile) {
-        return classifyAndStore(frameFile).result();
+        return runInference(frameFile == null ? List.of() : List.of(frameFile));
     }
 
     /**
-     * Full pipeline: inference, persistence, compartment update and realtime
-     * WebSocket notifications. Returns the servo command for the firmware.
+     * Saves a batch of frames and runs classification, returning the inference result.
+     */
+    public AiInferenceResult runInference(List<MultipartFile> frameFiles) {
+        return classifyAndStore(frameFiles).result();
+    }
+
+    /**
+     * Backward-compatible single-frame entry point.
      */
     @Transactional
     public ClassificationResponse processIncomingFrame(MultipartFile frame, Integer sensorPortId) {
-        InferenceOutcome outcome = classifyAndStore(frame);
+        return processIncomingFrames(frame == null ? List.of() : List.of(frame), sensorPortId);
+    }
+
+    /**
+     * Full pipeline for the ESP32-S3 multi-frame capture: saves the frame batch,
+     * runs inference, persists the detection and broadcasts the servo command.
+     */
+    @Transactional
+    public ClassificationResponse processIncomingFrames(List<MultipartFile> frames, Integer sensorPortId) {
+        InferenceOutcome outcome = classifyAndStore(frames);
         AiInferenceResult inference = outcome.result();
 
         int portId = sensorPortId == null || sensorPortId <= 0 ? 1 : sensorPortId;
@@ -124,8 +144,8 @@ public class ClassificationService {
                 timestamp);
     }
 
-    private InferenceOutcome classifyAndStore(MultipartFile frameFile) {
-        String imageUrl = saveFrame(frameFile);
+    private InferenceOutcome classifyAndStore(List<MultipartFile> frameFiles) {
+        String imageUrl = saveFrames(frameFiles);
         AiInferenceResult result = simulateInference();
         return new InferenceOutcome(result, imageUrl);
     }
@@ -147,21 +167,21 @@ public class ClassificationService {
             modelClass = random.nextBoolean() ? "plastic_bottle" : "plastic_cup";
             iconType = modelClass.equals("plastic_cup") ? "cup" : "bottle";
             servoAngle = SERVO_PLASTIC;
-            targetBin = 1;
+            targetBin = BIN_PLASTIC;
         } else if (roll < 75) {
             category = METAL;
             catKey = CAT_KEY_METAL;
             modelClass = random.nextBoolean() ? "can_metal" : "tin_can";
             iconType = "can";
             servoAngle = SERVO_METAL;
-            targetBin = 2;
+            targetBin = BIN_METAL;
         } else {
-            category = ORGANIC;
-            catKey = CAT_KEY_ORGANIC;
-            modelClass = random.nextBoolean() ? "banana_peel" : "apple_core";
-            iconType = "organic";
-            servoAngle = SERVO_ORGANIC;
-            targetBin = 3;
+            category = PAPER;
+            catKey = CAT_KEY_PAPER;
+            modelClass = random.nextBoolean() ? "paper_cup" : "paper_box";
+            iconType = modelClass.equals("paper_cup") ? "cup" : "box";
+            servoAngle = SERVO_PAPER;
+            targetBin = BIN_PAPER;
         }
 
         double confidence = Math.round((91.5 + random.nextDouble() * 6.9) * 10.0) / 10.0;
@@ -175,6 +195,30 @@ public class ClassificationService {
                 confidence,
                 servoAngle,
                 targetBin);
+    }
+
+    /**
+     * Persists every valid frame of the batch and returns the URL of the primary
+     * (latest) snapshot used for the dashboard preview.
+     */
+    private String saveFrames(List<MultipartFile> frameFiles) {
+        if (frameFiles == null || frameFiles.isEmpty()) {
+            throw new BusinessException("Khung hình gửi lên không hợp lệ.");
+        }
+
+        String primaryImageUrl = null;
+        for (MultipartFile frameFile : frameFiles) {
+            if (frameFile == null || frameFile.isEmpty()) {
+                continue;
+            }
+            primaryImageUrl = saveFrame(frameFile);
+        }
+
+        if (primaryImageUrl == null) {
+            throw new BusinessException("Khung hình gửi lên không hợp lệ.");
+        }
+
+        return primaryImageUrl;
     }
 
     private String saveFrame(MultipartFile frameFile) {
@@ -285,8 +329,8 @@ public class ClassificationService {
                 compartment.setName("NGĂN SỐ 2 · KIM LOẠI");
             }
             case 3 -> {
-                compartment.setKey(CAT_KEY_ORGANIC);
-                compartment.setName("NGĂN SỐ 3 · HỮU CƠ");
+                compartment.setKey(CAT_KEY_PAPER);
+                compartment.setName("NGĂN SỐ 3 · GIẤY");
             }
             default -> {
                 compartment.setKey(CAT_KEY_PLASTIC);
@@ -302,8 +346,8 @@ public class ClassificationService {
             case "plastic_cup" -> "Ly nhựa dùng 1 lần";
             case "can_metal" -> "Lon nước ngọt 330ml";
             case "tin_can" -> "Hộp thiếc kim loại";
-            case "banana_peel" -> "Vỏ chuối";
-            case "apple_core" -> "Lõi táo";
+            case "paper_cup" -> "Ly giấy dùng 1 lần";
+            case "paper_box" -> "Hộp giấy";
             default -> "Chai nhựa PET 500ml";
         };
     }

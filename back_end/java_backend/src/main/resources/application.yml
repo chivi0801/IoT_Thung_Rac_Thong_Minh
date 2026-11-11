@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/smartbin_db?useSSL=true&sslMode=REQUIRED&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    username: 2fzy5kiakVpxqZu.root
-    password: 1xEgSc6SOqyBdIUC
+    url: ${DB_URL:jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/smartbin_db?useSSL=true&sslMode=REQUIRED&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:2fzy5kiakVpxqZu.root}
+    password: ${DB_PASSWORD:1xEgSc6SOqyBdIUC}
     hikari:
       pool-name: TiDBCP
       maximum-pool-size: 10
@@ -14,6 +14,11 @@ spring:
       idle-timeout: 60000
       max-lifetime: 1800000
       connection-timeout: 30000
+
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 25MB
 
   jpa:
     # Legacy FK cleanup is a one-off: run with SPRING_PROFILES_ACTIVE=rebuild.

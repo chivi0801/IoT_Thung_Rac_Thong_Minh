@@ -30,7 +30,7 @@ public class IoTService {
 
     private static final String CAT_KEY_PLASTIC = "pl";
     private static final String CAT_KEY_METAL = "me";
-    private static final String CAT_KEY_ORGANIC = "or";
+    private static final String CAT_KEY_PAPER = "or";
 
     private final CompartmentRepository compartmentRepository;
     private final WebSocketBroadcastService webSocketBroadcastService;
@@ -132,8 +132,8 @@ public class IoTService {
                 compartment.setName("NGĂN SỐ 2 · KIM LOẠI");
             }
             case 3 -> {
-                compartment.setKey(CAT_KEY_ORGANIC);
-                compartment.setName("NGĂN SỐ 3 · HỮU CƠ");
+                compartment.setKey(CAT_KEY_PAPER);
+                compartment.setName("NGĂN SỐ 3 · GIẤY");
             }
             default -> {
                 compartment.setKey(CAT_KEY_PLASTIC);

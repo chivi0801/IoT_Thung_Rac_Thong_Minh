@@ -156,7 +156,9 @@ public class HistoryService {
         if (normalizedCategory.contains("KIM")) {
             return CAT_KEY_METAL;
         }
-        if (normalizedCategory.contains("HỮU") || normalizedCategory.contains("HUU")) {
+        if (normalizedCategory.contains("HỮU") || normalizedCategory.contains("HUU")
+                || normalizedCategory.contains("GIẤY") || normalizedCategory.contains("GIAY")
+                || normalizedCategory.contains("PAPER")) {
             return CAT_KEY_ORGANIC;
         }
         if (normalizedCategory.contains("NHỰA") || normalizedCategory.contains("NHUA")) {

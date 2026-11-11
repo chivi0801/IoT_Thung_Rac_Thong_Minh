@@ -91,7 +91,7 @@ public class DataInitializer implements CommandLineRunner {
     private void seedCompartments() {
         seedCompartment(1, "pl", "NGĂN SỐ 1 · NHỰA", 5.6, 38);
         seedCompartment(2, "me", "NGĂN SỐ 2 · KIM LOẠI", 17.4, 21);
-        seedCompartment(3, "or", "NGĂN SỐ 3 · HỮU CƠ", 11.1, 27);
+        seedCompartment(3, "or", "NGĂN SỐ 3 · GIẤY", 11.1, 27);
     }
 
     private void seedCompartment(int id, String key, String name,
@@ -185,8 +185,8 @@ public class DataInitializer implements CommandLineRunner {
                 "can_metal", "can", 2, "Cửa nạp #1", "Thành công",
                 "22118742", 15));
         wasteLogRepository.save(buildWasteLog(
-                "Vỏ chuối", "HỮU CƠ", "or", 98.1,
-                "banana_peel", "organic", 3, "Cửa nạp #2", "Thành công",
+                "Ly giấy dùng 1 lần", "GIẤY", "or", 98.1,
+                "paper_cup", "cup", 3, "Cửa nạp #2", "Thành công",
                 "20119631", 5));
         wasteLogRepository.save(buildWasteLog(
                 "Ly nhựa dùng 1 lần", "NHỰA", "pl", 91.5,
