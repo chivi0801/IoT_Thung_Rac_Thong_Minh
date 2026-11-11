@@ -36,33 +36,21 @@
     '  </a>\n' +
     '  <a href="thiet-bi.html" data-page="thiet-bi">\n' +
     '    <span class="nav-icon-wrap">\n' +
-    '      <svg viewBox="0 0 24 24">\n' +
-    '        <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />\n' +
-    '        <path d="M11 19h8.2a1.8 1.8 0 0 0 1.565-.914 1.78 1.78 0 0 0 .009-1.771L17.2 10" />\n' +
-    '        <path d="m14 16 3 3-3 3" />\n' +
-    '        <path d="M8.2 5.5h7.6" />\n' +
-    '        <path d="m18 3-2 3.5 2 3.5" />\n' +
-    '        <path d="m6.5 9-2-3.5 3.5-2" />\n' +
-    '      </svg>\n' +
+    '      <img class="nav-icon-img" src="assets/icon/wifi_device.svg" alt="" aria-hidden="true">\n' +
     '    </span>\n' +
     '    <span class="nav-text">\n' +
     '      <span class="desktop-label">Thiết bị</span>\n' +
-    '      <span class="mobile-label">Phân loại</span>\n' +
+    '      <span class="mobile-label">Thiết bị</span>\n' +
     '    </span>\n' +
     '  </a>\n' +
-    '  <a href="lich-su.html" data-page="lich-su">\n' +
-    '    <span class="nav-icon-wrap">\n' +
-    '      <svg viewBox="0 0 24 24">\n' +
-    '        <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />\n' +
-    '        <path d="M3 3v5h5M12 7v5l3 2" />\n' +
-    '      </svg>\n' +
-    '    </span>\n' +
-    '    <span class="nav-text">Lịch sử</span>\n' +
+    '  <a href="servo.html" data-page="servo">\n' +
+    '    <span class="nav-icon-wrap"><img class="nav-icon-img" src="assets/icon/settings.svg" alt="" aria-hidden="true"></span>\n' +
+    '    <span class="nav-text">Điều khiển servo</span>\n' +
     '  </a>\n' +
     '</nav>\n' +
     '<div class="hw">\n' +
     '  <div><span>PHẦN CỨNG</span><span class="chip">ESP32-S3</span></div>\n' +
-    '  <div><span>TRẠNG THÁI</span><span class="on-t" id="sideOn">ONLINE</span></div>\n' +
+    '  <div><span>TRẠNG THÁI</span><span class="on-t" id="sideOn">CHỜ ESP32</span></div>\n' +
     '</div>';
 
   /**

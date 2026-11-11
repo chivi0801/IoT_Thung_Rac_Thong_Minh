@@ -3,17 +3,27 @@ setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 
 if not defined ESP32_BINS_URL set "ESP32_BINS_URL=http://192.168.1.31/bins"
+if not defined ESP32_SERVO_URL set "ESP32_SERVO_URL=http://192.168.1.31/servo"
 
-if not exist "back_end\.venv\Scripts\python.exe" (
+rem Reuse the CUDA-enabled environment from D:\PhanLoaiRac_test on this PC.
+rem Set SMART_BIN_PYTHON to override this path; other PCs fall back to back_end\.venv.
+if not defined SMART_BIN_PYTHON if exist "D:\PhanLoaiRac_test\.venv\Scripts\python.exe" set "SMART_BIN_PYTHON=D:\PhanLoaiRac_test\.venv\Scripts\python.exe"
+if not defined SMART_BIN_PYTHON set "SMART_BIN_PYTHON=%~dp0back_end\.venv\Scripts\python.exe"
+
+if /I "%SMART_BIN_PYTHON%"=="%~dp0back_end\.venv\Scripts\python.exe" if not exist "%SMART_BIN_PYTHON%" (
     echo Creating Python environment...
     py -3 -m venv back_end\.venv
     if errorlevel 1 goto setup_failed
 )
 
-"back_end\.venv\Scripts\python.exe" -c "import flask, cv2, numpy, ultralytics" >nul 2>&1
+if not exist "%SMART_BIN_PYTHON%" goto python_not_found
+
+echo Using Python: %SMART_BIN_PYTHON%
+"%SMART_BIN_PYTHON%" -c "import flask, cv2, numpy, ultralytics, torch" >nul 2>&1
 if errorlevel 1 (
+    if /I not "%SMART_BIN_PYTHON%"=="%~dp0back_end\.venv\Scripts\python.exe" goto shared_python_missing
     echo Installing backend requirements. This may take several minutes on first run...
-    "back_end\.venv\Scripts\python.exe" -m pip install -r back_end\requirements.txt
+    "%SMART_BIN_PYTHON%" -m pip install -r back_end\requirements.txt
     if errorlevel 1 goto setup_failed
 )
 
@@ -21,7 +31,7 @@ powershell -NoProfile -Command "try { Invoke-WebRequest -UseBasicParsing http://
 if not errorlevel 1 goto open_web
 
 echo Starting Smart Bin backend...
-start "Smart Bin Backend" "back_end\.venv\Scripts\python.exe" "back_end\app.py"
+start "Smart Bin Backend" "%SMART_BIN_PYTHON%" "back_end\app.py"
 set /a attempts=0
 
 :wait_server
@@ -38,6 +48,17 @@ exit /b 0
 
 :setup_failed
 echo Backend setup failed. Check Python 3 and your internet connection, then try again.
+pause
+exit /b 1
+
+:python_not_found
+echo Python was not found: %SMART_BIN_PYTHON%
+pause
+exit /b 1
+
+:shared_python_missing
+echo The selected shared Python environment is missing required packages.
+echo No packages were installed. Select another SMART_BIN_PYTHON or install dependencies manually.
 pause
 exit /b 1
 

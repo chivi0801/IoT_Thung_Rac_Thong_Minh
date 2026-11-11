@@ -10,10 +10,11 @@ Backend nhận 5 ảnh từ ESP32 tại `POST /predict`, chạy YOLO bằng mode
 2. Nhấp đúp `start_smart_bin.bat`. Lần đầu chạy, file này tạo môi trường Python và cài requirements; sau đó nó mở backend và trình duyệt.
 3. Mở `http://127.0.0.1:5000/tong-quan.html` nếu trình duyệt chưa tự mở.
 
-Backend chạy trong cửa sổ console riêng. Để xem số đo cảm biến, kiểm tra `ESP32_BINS_URL` ở đầu file batch hoặc đặt biến môi trường trước khi chạy, ví dụ:
+Backend chạy trong cửa sổ console riêng. Để xem số đo cảm biến, kiểm tra `ESP32_BINS_URL`; để điều khiển servo, kiểm tra `ESP32_SERVO_URL` ở đầu file batch hoặc đặt biến môi trường trước khi chạy, ví dụ:
 
    ```powershell
    $env:ESP32_BINS_URL = "http://192.168.1.31/bins"
+   $env:ESP32_SERVO_URL = "http://192.168.1.31/servo"
    .\start_smart_bin.bat
    ```
 

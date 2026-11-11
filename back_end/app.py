@@ -13,6 +13,7 @@ from urllib.request import urlopen
 
 import cv2
 import numpy as np
+import torch
 from flask import Flask, jsonify, request, send_from_directory
 from ultralytics import YOLO
 
@@ -26,10 +27,12 @@ EXPECTED_MODEL_CLASSES = {
     6: "bottle_awss",
     15: "paperCup_awss",
 }
-CONFIDENCE_THRESHOLD = 0.60
+CONFIDENCE_THRESHOLD = 0.4
 MAX_IMAGES = 5
 UPLOAD_DIR = BACKEND_DIR / "uploads"
 ESP32_BINS_URL = os.environ.get("ESP32_BINS_URL", "http://192.168.1.31/bins")
+ESP32_SERVO_URL = os.environ.get("ESP32_SERVO_URL", "http://192.168.1.31/servo")
+INFERENCE_DEVICE = 0 if torch.cuda.is_available() else "cpu"
 
 # Mapping theo logic servo trong ESP32_S3/code.cpp
 CLASS_TO_SERVO = {
@@ -125,6 +128,15 @@ def save_annotated_images(results, frame_results, winning_class, batch_dir):
         cv2.imwrite(str(batch_dir / f"annotated_{index + 1:02d}.jpg"), annotated)
 
 
+def select_best_frame(frame_results, frame_confidences):
+    """Pick the highest-confidence detected frame in the full batch."""
+    candidates = [
+        index for index, class_id in enumerate(frame_results)
+        if class_id is not None and frame_confidences[index] is not None
+    ]
+    return max(candidates, key=lambda index: frame_confidences[index]) if candidates else 0
+
+
 @app.get("/health")
 def health():
     return jsonify({"status": "ok", "model": str(MODEL_PATH.name)})
@@ -132,7 +144,14 @@ def health():
 
 @app.get("/api/health")
 def api_health():
-    return jsonify({"status": "ok", "model": str(MODEL_PATH.name), "esp32_bins_url": ESP32_BINS_URL})
+    return jsonify({
+        "status": "ok",
+        "model": str(MODEL_PATH.name),
+        "model_loaded": _model is not None,
+        "inference_device": INFERENCE_DEVICE,
+        "cuda_available": torch.cuda.is_available(),
+        "esp32_bins_url": ESP32_BINS_URL,
+    })
 
 
 @app.get("/api/bins")
@@ -149,6 +168,30 @@ def bins():
     if not isinstance(payload, dict) or not isinstance(payload.get("bins"), list):
         return jsonify({"success": False, "error": "ESP32 /bins returned an invalid response"}), 502
     return jsonify(payload)
+
+
+@app.post("/api/servo")
+def control_servo():
+    """Validate a servo command and proxy it to the ESP32."""
+    payload = request.get_json(silent=True) or {}
+    try:
+        servo = int(payload.get("servo"))
+        angle = int(payload.get("angle"))
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "error": "servo and angle must be integers"}), 400
+    if servo not in (1, 2) or not 0 <= angle <= 180:
+        return jsonify({"success": False, "error": "servo must be 1 or 2 and angle must be between 0 and 180"}), 400
+
+    separator = "&" if "?" in ESP32_SERVO_URL else "?"
+    url = f"{ESP32_SERVO_URL}{separator}servo={servo}&angle={angle}"
+    try:
+        with urlopen(url, timeout=4) as response:
+            response_text = response.read().decode("utf-8", errors="replace")
+    except HTTPError as exc:
+        return jsonify({"success": False, "error": f"ESP32 returned HTTP {exc.code}"}), 502
+    except (URLError, TimeoutError, OSError) as exc:
+        return jsonify({"success": False, "error": f"Cannot reach ESP32 servo endpoint: {exc}"}), 503
+    return jsonify({"success": True, "servo": servo, "angle": angle, "esp32_response": response_text})
 
 
 @app.get("/api/latest")
@@ -180,12 +223,26 @@ def latest_prediction():
         original = f"/api/batches/{batch_dir.name}/{original_name}" if (batch_dir / original_name).is_file() else None
         annotated = f"/api/batches/{batch_dir.name}/{annotated_name}" if (batch_dir / annotated_name).is_file() else None
         if original or annotated:
-            images.append({"original_url": original, "annotated_url": annotated})
+            confidence_values = payload.get("frame_confidences", [])
+            class_values = payload.get("frame_classes", [])
+            images.append({
+                "index": index,
+                "confidence": confidence_values[index - 1] if index <= len(confidence_values) else None,
+                "class_name": class_values[index - 1] if index <= len(class_values) else None,
+                "original_url": original,
+                "annotated_url": annotated,
+            })
+
+    best_index = payload.get("best_frame_index", 1)
+    best_image = next((item for item in images if item["index"] == best_index), None)
+    if best_image is None and images:
+        best_image = max(images, key=lambda item: item["confidence"] or 0)
 
     payload["status"] = "complete"
     payload["batch_id"] = batch_dir.name
     payload["received_at"] = datetime.fromtimestamp(prediction_file.stat().st_mtime).astimezone().isoformat(timespec="seconds")
     payload["images"] = images
+    payload["best_image"] = best_image
     return jsonify(payload)
 
 
@@ -227,7 +284,7 @@ def predict():
         # One local inference batch for all captured frames.
         results = model.predict(
             source=images,
-            device=0,
+            device=INFERENCE_DEVICE,
             classes=sorted(ALLOWED_CLASSES),
             conf=CONFIDENCE_THRESHOLD,
             verbose=False,
@@ -249,6 +306,7 @@ def predict():
     votes = Counter()
     confidences = defaultdict(list)
     frame_results = []
+    frame_confidences = []
     for result in results:
         best_by_class = {}
         for box in result.boxes:
@@ -258,11 +316,14 @@ def predict():
                 best_by_class[class_id] = max(best_by_class.get(class_id, 0.0), confidence)
         if not best_by_class:
             frame_results.append(None)
+            frame_confidences.append(None)
             continue
         winner = max(best_by_class, key=best_by_class.get)
+        winner_confidence = best_by_class[winner]
         votes[winner] += 1
-        confidences[winner].append(best_by_class[winner])
+        confidences[winner].append(winner_confidence)
         frame_results.append(winner)
+        frame_confidences.append(round(winner_confidence, 4))
 
     if not votes:
         save_annotated_images(results, frame_results, None, batch_dir)
@@ -272,6 +333,9 @@ def predict():
             "frames_received": len(images),
             "inference_device": inference_device,
             "votes": {},
+            "best_frame_index": select_best_frame(frame_results, frame_confidences) + 1,
+            "frame_confidences": frame_confidences,
+            "frame_classes": [None] * len(frame_results),
             "saved_images": [str(path.relative_to(BASE_DIR)) for path in saved_paths],
         }
         save_prediction(batch_dir, payload, started_at)
@@ -294,6 +358,8 @@ def predict():
             "inference_device": inference_device,
             "votes": {CLASS_TO_SERVO[k][0]: v for k, v in votes.items()},
             "frame_classes": [CLASS_TO_SERVO[k][0] if k is not None else None for k in frame_results],
+            "frame_confidences": frame_confidences,
+            "best_frame_index": select_best_frame(frame_results, frame_confidences) + 1,
             "saved_images": [str(path.relative_to(BASE_DIR)) for path in saved_paths],
         }
         save_prediction(batch_dir, payload, started_at)
@@ -310,6 +376,8 @@ def predict():
         "frames_received": len(images),
         "inference_device": inference_device,
         "frame_classes": [CLASS_TO_SERVO[k][0] if k is not None else None for k in frame_results],
+        "frame_confidences": frame_confidences,
+        "best_frame_index": select_best_frame(frame_results, frame_confidences) + 1,
         "saved_images": [str(path.relative_to(BASE_DIR)) for path in saved_paths],
     }
     save_prediction(batch_dir, payload, started_at)

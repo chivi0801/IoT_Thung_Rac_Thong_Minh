@@ -26,9 +26,9 @@
   };
 
   var colorMap = {
-    pl: { stroke: '#f59e0b', tagBg: '#f59e0b', badgeClass: 'pl', text: 'NHỰA' },
-    me: { stroke: '#3b82f6', tagBg: '#2563eb', badgeClass: 'me', text: 'KIM LOẠI' },
-    or: { stroke: '#10b981', tagBg: '#059669', badgeClass: 'or', text: 'HỮU CƠ' }
+    pl: { stroke: '#f59e0b', tagBg: '#f59e0b', badgeClass: 'pl', text: 'CHAI NHỰA' },
+    me: { stroke: '#3b82f6', tagBg: '#2563eb', badgeClass: 'me', text: 'LON NƯỚC' },
+    or: { stroke: '#10b981', tagBg: '#059669', badgeClass: 'or', text: 'LY GIẤY' }
   };
 
   function $(id) {
@@ -145,21 +145,24 @@
     var image = $('processedImage');
     var viewport = $('cameraViewport');
     var indicator = $('camLiveIndicator');
-    var firstImage = (batch.images || []).find(function (item) {
-      return item.annotated_url || item.original_url;
-    });
-    if (image && viewport && firstImage) {
+    var batchImages = batch.images || [];
+    var bestImage = batch.best_image || batchImages.reduce(function (best, item) {
+      if (!item.annotated_url && !item.original_url) return best;
+      if (!best || (Number(item.confidence) || 0) > (Number(best.confidence) || 0)) return item;
+      return best;
+    }, null);
+    if (image && viewport && bestImage) {
       image.hidden = false;
       image.onload = function () { viewport.classList.add('has-image'); };
       image.onerror = function () { viewport.classList.remove('has-image'); };
-      image.src = (firstImage.annotated_url || firstImage.original_url) + '?v=' + encodeURIComponent(batch.batch_id);
+      image.src = (bestImage.annotated_url || bestImage.original_url) + '?v=' + encodeURIComponent(batch.batch_id);
     }
 
     var className = batch.class_name || '';
     var categoryMap = {
-      can: { category: 'KIM LOẠI', key: 'me', icon: 'can' },
-      bottle: { category: 'NHỰA', key: 'pl', icon: 'bottle' },
-      'paper cup': { category: 'GIẤY', key: 'or', icon: 'box' }
+      can: { category: 'LON NƯỚC', key: 'me', icon: 'can' },
+      bottle: { category: 'CHAI NHỰA', key: 'pl', icon: 'bottle' },
+      'paper cup': { category: 'LY GIẤY', key: 'or', icon: 'box' }
     };
     var mapped = categoryMap[className] || { category: 'CHƯA PHÂN LOẠI', key: 'pl', icon: 'bottle' };
     var time = batch.received_at ? new Date(batch.received_at).toLocaleTimeString('vi-VN') : '--';
@@ -174,13 +177,28 @@
       iconType: mapped.icon
     };
 
-    if (indicator) indicator.textContent = batch.success ? 'ESP32 · ĐÃ XỬ LÝ' : 'ESP32 · ĐÃ NHẬN ẢNH';
+    if (indicator) {
+      var bestConfidence = bestImage && bestImage.confidence !== null && bestImage.confidence !== undefined &&
+        Number.isFinite(Number(bestImage.confidence)) ?
+        (Number(bestImage.confidence) * 100).toFixed(1) + '%' : '--';
+      indicator.textContent = 'ẢNH TIN CẬY CAO NHẤT · ' +
+        (bestImage ? bestImage.index + '/' + (batch.frames_received || batchImages.length) : 'KHÔNG CÓ') +
+        ' · ' + bestConfidence;
+    }
     var frameCount = $('frameCount');
     if (frameCount) frameCount.textContent = (batch.frames_received || (batch.images || []).length || 0) + ' ảnh';
     recentActivities = [record];
     allActivities = recentActivities.slice();
     renderRecentTable();
     displayDetection(record);
+    var mobileName = $('mLatestItem');
+    var mobileCategory = $('mLatestCat');
+    var mobileTime = $('mLatestTime');
+    var mobileStatus = document.querySelector('.m-result-status-btn');
+    if (mobileName) mobileName.textContent = batch.success ? mapped.category : 'Chưa phân loại';
+    if (mobileCategory) mobileCategory.textContent = mapped.category;
+    if (mobileTime) mobileTime.textContent = time;
+    if (mobileStatus) mobileStatus.textContent = batch.success ? 'ĐÃ PHÂN LOẠI' : 'CHƯA ĐẠT ĐỒNG THUẬN';
   }
 
   function pollLatestBatch() {
@@ -192,6 +210,8 @@
         return response.json();
       })
       .then(function (payload) {
+        var sideStatus = $('sideOn');
+        if (sideStatus) sideStatus.textContent = payload.status === 'waiting' ? 'ĐANG CHỜ ESP32' : 'ĐÃ NHẬN DỮ LIỆU';
         if (payload.status === 'waiting') {
           if (!lastBatchId) showWaitingForEsp32(payload.message);
           return;
@@ -231,41 +251,6 @@
     notify('Đã xuất file log CSV thành công!');
   }
 
-  /**
-   * Hiển thị bảng trong Modal Xem tất cả
-   */
-  function renderModalRows(items) {
-    var tbody = $('modalTableBody');
-    if (!tbody) return;
-
-    var html = '';
-    items.forEach(function (act) {
-      html += '<tr>' +
-        '<td class="mono"><b>' + act.time + '</b></td>' +
-        '<td><span class="badge-pill ' + act.catKey + '">' + act.category + '</span></td>' +
-        '<td class="mono">' + act.confidence + '</td>' +
-        '<td><span class="status-badge-ok">' + act.status + '</span></td>' +
-        '</tr>';
-    });
-    tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--mut);padding:24px;">Không tìm thấy kết quả phù hợp.</td></tr>';
-  }
-
-  function applyModalFilter() {
-    var searchInput = $('searchInput');
-    var filterCategory = $('filterCategory');
-    if (!searchInput || !filterCategory) return;
-
-    var q = searchInput.value.trim().toLowerCase();
-    var cat = filterCategory.value;
-
-    var filtered = allActivities.filter(function (x) {
-      var matchText = x.category.toLowerCase().indexOf(q) !== -1 || x.time.indexOf(q) !== -1;
-      var matchCat = cat === 'ALL' || x.category === cat;
-      return matchText && matchCat;
-    });
-    renderModalRows(filtered);
-  }
-
   // Khởi tạo các sự kiện khi DOM tải xong
   document.addEventListener('DOMContentLoaded', function () {
     renderRecentTable();
@@ -294,40 +279,6 @@
       btnExport.addEventListener('click', exportCsvLog);
     }
 
-    // Modal Xem tất cả
-    var btnViewAll = $('btnViewAll');
-    var modal = $('modalViewAll');
-    var modalClose = $('modalClose');
-
-    if (btnViewAll && modal) {
-      btnViewAll.addEventListener('click', function () {
-        renderModalRows(allActivities);
-        modal.classList.add('open');
-      });
-    }
-
-    if (modalClose && modal) {
-      modalClose.addEventListener('click', function () {
-        modal.classList.remove('open');
-      });
-    }
-
-    if (modal) {
-      modal.addEventListener('click', function (e) {
-        if (e.target === modal) {
-          modal.classList.remove('open');
-        }
-      });
-    }
-
-    // Tìm kiếm và lọc trong modal
-    var searchInput = $('searchInput');
-    var filterCategory = $('filterCategory');
-
-    if (searchInput) searchInput.addEventListener('input', applyModalFilter);
-    if (filterCategory) filterCategory.addEventListener('change', applyModalFilter);
-
-    // =========================================================================
     // MOBILE INTERACTIONS (Khớp ảnh mẫu Tổng Quan)
     // =========================================================================
     var btnRefresh = $('btnRefreshSensors');

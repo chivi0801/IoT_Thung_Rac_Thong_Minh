@@ -28,6 +28,11 @@
   margin-top: 20px;
 }
 
+/* The connection card fills the row after removing the unused local-only settings. */
+.g2.sec > .device-status-card {
+  grid-column: 1 / -1;
+}
+
 /* Alert Banner */
 .banner {
   display: none;
@@ -809,10 +814,15 @@ input[type=range] {
   margin-top: 2px;
 }
 
-.actuator-icon-wrap svg {
+.actuator-icon-wrap svg,
+.actuator-icon-wrap img {
   width: 18px;
   height: 18px;
   stroke: currentColor;
+}
+
+.actuator-icon-wrap img {
+  filter: brightness(0) saturate(100%) invert(32%) sepia(94%) saturate(462%) hue-rotate(104deg) brightness(95%) contrast(94%);
 }
 
 /* Bottom Hardware Mini Bar */
@@ -837,10 +847,16 @@ input[type=range] {
   color: var(--pri);
 }
 
-.hw-item svg {
+.hw-item svg,
+.hw-item img {
   width: 16px;
   height: 16px;
   stroke: var(--pri);
+}
+
+.hw-item img {
+  object-fit: contain;
+  opacity: .8;
 }
 
 /* ==========================================================================

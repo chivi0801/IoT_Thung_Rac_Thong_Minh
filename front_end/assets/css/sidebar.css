@@ -1,6 +1,6 @@
 /* ==========================================================================
    SIDEBAR & NAVIGATION COMPONENT STYLESHEET (sidebar.css)
-   Dùng chung cho cả 3 trang: tong-quan.html, thiet-bi.html, lich-su.html
+   Dùng chung cho cả 3 trang: tong-quan.html và thiet-bi.html
    Hỗ trợ chuyển đổi Desktop: "Thiết bị" <---> Mobile: "Phân loại"
    ========================================================================== */
 
@@ -116,9 +116,15 @@ nav a {
   flex-shrink: 0;
 }
 
-nav a svg {
+nav a svg,
+nav a .nav-icon-img {
   width: 18px;
   height: 18px;
+  object-fit: contain;
+  opacity: .75;
+}
+
+nav a svg {
   stroke: currentColor;
   fill: none;
   stroke-width: 1.8;
@@ -132,9 +138,14 @@ nav a.on {
   color: #ffffff;
 }
 
-nav a.on svg {
+nav a.on svg,
+nav a.on .nav-icon-img {
   opacity: 1;
   stroke: #ffffff;
+}
+
+nav a.on .nav-icon-img {
+  filter: brightness(0) invert(1);
 }
 
 nav a:hover:not(.on) {
@@ -280,9 +291,11 @@ nav a:focus-visible {
     transition: background 0.2s ease;
   }
 
-  nav a svg {
+  nav a svg,
+  nav a .nav-icon-img {
     width: 20px;
     height: 20px;
+    object-fit: contain;
     stroke: var(--mut, #6b7d72);
     opacity: 0.9;
   }
@@ -297,9 +310,14 @@ nav a:focus-visible {
     background: #e3f8ef;
   }
 
-  nav a.on svg {
+  nav a.on svg,
+  nav a.on .nav-icon-img {
     stroke: var(--pri, #1b4332);
     opacity: 1;
+  }
+
+  nav a.on .nav-icon-img {
+    filter: brightness(0) saturate(100%) invert(19%) sepia(17%) saturate(1154%) hue-rotate(100deg) brightness(91%) contrast(92%);
   }
 }
 

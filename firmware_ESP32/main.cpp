@@ -14,8 +14,8 @@
 // 1. WIFI - THAY THONG TIN CUA BAN
 // =====================================================
 
-const char* WIFI_SSID = "YOUR_WIFI_SSID";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID = "Redmi Note 11S";
+const char* WIFI_PASSWORD = "123456789";
 
 // IP tinh cua ESP32 tren hotspot. Gateway/subnet dang gia dinh hotspot dung
 // mang 192.168.1.0/24; doi gateway neu dia chi hotspot khac.
@@ -379,6 +379,15 @@ bool captureFiveImages() {
     freeImages();
 
     Serial.println("\nCapturing 5 images...");
+
+    // With one frame buffer and CAMERA_GRAB_WHEN_EMPTY, a frame may remain
+    // queued while the ESP32 uploads the previous batch. Discard that stale
+    // frame so all five images below are captured for the current trigger.
+    camera_fb_t* queuedFrame = esp_camera_fb_get();
+    if (queuedFrame != nullptr) {
+        esp_camera_fb_return(queuedFrame);
+        Serial.println("Discarded one queued camera frame before batch capture.");
+    }
 
     for (int i = 0; i < IMAGE_COUNT; i++) {
 

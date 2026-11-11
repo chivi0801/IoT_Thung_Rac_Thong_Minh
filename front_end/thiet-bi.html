@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Phân loại & Thiết bị – Thùng rác thông minh</title>
+  <title>Thiết bị – Thùng rác thông minh</title>
   
   <!-- Typography Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,34 +52,19 @@
       </a>
       <a href="thiet-bi.html" data-page="thiet-bi" class="on" aria-current="page">
         <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24">
-            <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
-            <path d="M11 19h8.2a1.8 1.8 0 0 0 1.565-.914 1.78 1.78 0 0 0 .009-1.771L17.2 10" />
-            <path d="m14 16 3 3-3 3" />
-            <path d="M8.2 5.5h7.6" />
-            <path d="m18 3-2 3.5 2 3.5" />
-            <path d="m6.5 9-2-3.5 3.5-2" />
-          </svg>
+          <img class="nav-icon-img" src="assets/icon/wifi_device.svg" alt="" aria-hidden="true">
         </span>
         <span class="nav-text">
           <span class="desktop-label">Thiết bị</span>
-          <span class="mobile-label">Phân loại</span>
+          <span class="mobile-label">Thiết bị</span>
         </span>
       </a>
-      <a href="lich-su.html" data-page="lich-su">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24">
-            <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
-            <path d="M3 3v5h5M12 7v5l3 2" />
-          </svg>
-        </span>
-        <span class="nav-text">Lịch sử</span>
-      </a>
+      <a href="servo.html" data-page="servo"><span class="nav-icon-wrap"><img class="nav-icon-img" src="assets/icon/settings.svg" alt="" aria-hidden="true"></span><span class="nav-text">Điều khiển servo</span></a>
     </nav>
     
     <div class="hw">
       <div><span>PHẦN CỨNG</span><span class="chip">ESP32-S3</span></div>
-      <div><span>TRẠNG THÁI</span><span class="on-t" id="sideOn">ONLINE</span></div>
+      <div><span>TRẠNG THÁI</span><span class="on-t" id="sideOn">ĐANG CHỜ</span></div>
     </div>
   </aside>
 
@@ -125,44 +110,22 @@
 
         <!-- Device Status & Configurations 2-Col Grid -->
         <div class="grid g2 sec">
-          <!-- Hardware Details -->
-          <section class="card">
+          <!-- ESP32 connection details -->
+          <section class="card device-status-card">
             <div class="ctitle">
               <span>[TRẠNG THÁI THIẾT BỊ]</span>
-              <span class="on-t" id="devOn">ONLINE</span>
+              <span class="on-t" id="devOn">ĐANG CHỜ</span>
             </div>
             <div class="row"><span>Vi điều khiển</span><b>ESP32-S3 WROOM CAM</b></div>
-            <div class="row"><span>Camera</span><b>OV3660 / OV2640</b></div>
-            <div class="row"><span>Mô hình AI</span><b>MobileNetV2 / TinyML</b></div>
+            <div class="row"><span>Camera</span><b>ESP32-S3</b></div>
+            <div class="row"><span>Mô hình AI</span><b>YOLO · xử lý trên server</b></div>
             <div class="row"><span>Kết nối gần nhất</span><b id="lastSeen">--</b></div>
             <div class="row">
               <span>Sóng WiFi</span>
-              <b><span class="wifi"><i></i><i></i><i></i><i></i></span>-54 dBm</b>
+              <b id="wifiStatus">Chờ ESP32</b>
             </div>
             <div class="row"><span>Thời gian hoạt động</span><b id="uptime">--</b></div>
-            <div class="row"><span>Phiên bản firmware</span><b>v1.0.3</b></div>
-          </section>
-
-          <!-- Configuration Settings -->
-          <section class="card">
-            <div class="ctitle"><span>[CẤU HÌNH]</span></div>
-            
-            <div class="set">
-              <label for="thFull">Ngưỡng cảnh báo đầy <b id="thFullV">80%</b></label>
-              <p>Ngăn đạt mức này sẽ hiện cảnh báo “Sắp đầy”.</p>
-              <input type="range" id="thFull" min="50" max="95" step="5" value="80">
-            </div>
-            
-            <div class="set">
-              <label for="thConf">Độ tin cậy tối thiểu <b id="thConfV">60%</b></label>
-              <p>Dưới mức này, AI không phân loại và đánh dấu “Không chắc chắn” để kiểm tra lại.</p>
-              <input type="range" id="thConf" min="30" max="95" step="5" value="60">
-            </div>
-            
-            <div class="actions">
-              <button class="btn ghost" id="resetCfg">Đặt lại mặc định</button>
-              <button class="btn" id="saveCfg">Lưu cấu hình</button>
-            </div>
+            <div class="row"><span>Phiên bản firmware</span><b>--</b></div>
           </section>
         </div>
       </div>
@@ -192,9 +155,9 @@
           <div class="cam-top-overlay">
             <div class="cam-rec-indicator">
               <span class="rec-dot"></span>
-              <span>REC [0,0] • 240x240</span>
+              <span>ESP32 · ẢNH MỚI NHẤT</span>
             </div>
-            <div class="cam-fps-badge">OV2640 • 15 FPS</div>
+            <div class="cam-fps-badge">ẢNH ĐÃ GỬI LÊN</div>
           </div>
 
           <!-- Neon Bounding Box -->
@@ -203,9 +166,9 @@
             <div class="neon-label-tag">
               <div class="neon-label-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <span id="targetObjectName">Rác Nhựa</span>
+                <span id="targetObjectName">Đang chờ ESP32</span>
               </div>
-              <div class="neon-label-sub" id="targetAiConf">(TinyML 98%)</div>
+              <div class="neon-label-sub" id="targetAiConf">Chưa có kết quả</div>
             </div>
 
             <!-- Target Crosshair & Bottle Silhouette -->
@@ -219,13 +182,13 @@
             </div>
 
             <!-- Confidence bottom badge -->
-            <div class="box-conf-badge" id="boxConfBadge">CONF: 0.984</div>
+            <div class="box-conf-badge" id="boxConfBadge">Chưa có kết quả</div>
           </div>
 
           <!-- Bottom Overlay: ISO + Dim -->
           <div class="cam-bottom-overlay">
-            <span>ISO AUTO • FL 3.6mm</span>
-            <span>[240,240]</span>
+            <span>KẾT QUẢ XỬ LÝ TRÊN SERVER</span>
+            <span>3 LOẠI RÁC</span>
           </div>
         </div>
 
@@ -233,9 +196,9 @@
         <div class="sensor-latency-bar">
           <div class="sensor-info">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4.93 4.93a10 10 0 0 1 14.14 0"/><path d="M7.76 7.76a6 6 0 0 1 8.48 0"/><circle cx="12" cy="12" r="2"/></svg>
-            <span>Khung nạp: Sensor quang điện #01</span>
+            <span>Cảm biến kích hoạt phân loại</span>
           </div>
-          <div class="latency-pill" id="latencyPill">Độ trễ: 120ms</div>
+          <div class="latency-pill" id="latencyPill">Độ trễ: --</div>
         </div>
 
         <!-- 1. Card: QUY TRÌNH XỬ LÝ (Chu kỳ #8429) -->
@@ -247,7 +210,7 @@
               </svg>
               <span>QUY TRÌNH XỬ LÝ</span>
             </div>
-            <div class="cycle-badge" id="cycleBadge">Chu kỳ #8429</div>
+            <div class="cycle-badge" id="cycleBadge">Đang chờ dữ liệu</div>
           </div>
 
           <div class="stepper-timeline">
@@ -257,7 +220,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div class="step-label">1. Chụp ảnh</div>
-              <div class="step-sub" id="stepTime1">10:24:14</div>
+              <div class="step-sub" id="stepTime1">--:--</div>
             </div>
 
             <!-- Step 2 -->
@@ -266,7 +229,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div class="step-label">2. Nhận diện</div>
-              <div class="step-sub tag-pill" id="stepConf2">TinyML 98%</div>
+              <div class="step-sub tag-pill" id="stepConf2">Đang chờ ảnh</div>
             </div>
 
             <!-- Step 3 -->
@@ -275,12 +238,12 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div class="step-label">3. Phân loại</div>
-              <div class="step-sub done">Hoàn tất</div>
+              <div class="step-sub done">Đang chờ</div>
             </div>
           </div>
         </div>
 
-        <!-- 2. Card: Kết quả nhận diện ([ID: RC-9921]) -->
+        <!-- 2. Card: Kết quả nhận diện (Chờ batch) -->
         <div class="detection-card">
           <div class="detection-header">
             <div class="detection-title">
@@ -289,36 +252,36 @@
               </div>
               <span>Kết quả nhận diện</span>
             </div>
-            <div class="rc-id-badge" id="rcIdBadge">[ID: RC-9921]</div>
+            <div class="rc-id-badge" id="rcIdBadge">Chờ batch</div>
           </div>
 
           <div class="det-row">
             <span>Phân loại rác:</span>
             <span class="pet-badge" id="valCategoryBadge">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" /><path d="M11 19h8.2a1.8 1.8 0 0 0 1.565-.914 1.78 1.78 0 0 0 .009-1.771L17.2 10" /><path d="m14 16 3 3-3 3" /></svg>
-              Nhựa tái chế (PET)
+              Chưa có kết quả
             </span>
           </div>
 
           <div class="det-row">
             <span>Thời gian ghi nhận:</span>
-            <b class="mono" id="valTimestamp">10:24:15 (Hôm nay)</b>
+            <b class="mono" id="valTimestamp">--</b>
           </div>
 
           <div class="det-row">
             <span>Trạng thái gạt rác:</span>
             <span class="success-badge">
               <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
-              Thành công
+              Đang chờ ESP32
             </span>
           </div>
 
           <!-- Servo SG90 Note Box -->
           <div class="actuator-note-box">
             <div class="actuator-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              <img src="assets/icon/settings.svg" alt="" aria-hidden="true">
             </div>
-            <p>Cánh gạt Servo SG90 quay 90° đưa vật phẩm vào <b>Ngăn 1 (Nhựa tái chế)</b>. Cảm biến mức đã cập nhật dung tích thùng rác.</p>
+            <p>Servo đưa vật phẩm vào ngăn chai nhựa, ly giấy hoặc lon nước. Cảm biến khoảng cách cập nhật mức đầy từng ngăn.</p>
           </div>
         </div>
 
@@ -326,11 +289,11 @@
         <div class="hw-mini-bar">
           <div class="hw-item">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>
-            <span>ESP32-CAM (FreeHeap: 124KB)</span>
+            Đang chờ ESP32</span>
           </div>
           <div class="hw-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-            <span>WiFi RSSI: -54 dBm</span>
+            <img src="assets/icon/wifi_device.svg" alt="" aria-hidden="true">
+            <span>Wi-Fi: chờ kết nối</span>
           </div>
         </div>
 

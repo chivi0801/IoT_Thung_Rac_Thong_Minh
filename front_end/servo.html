@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Điều khiển servo – Thùng rác thông minh</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/sidebar.css">
+  <link rel="stylesheet" href="assets/css/servo.css">
+  <script src="assets/js/common.js" defer></script>
+  <script src="assets/js/sidebar.js" defer></script>
+  <script src="assets/js/servo.js" defer></script>
+</head>
+<body>
+  <aside id="sidebar-container" class="sidebar-container" aria-label="Menu điều hướng hệ thống">
+    <div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9zM2 9h2M2 15h2M20 9h2M20 15h2"/></svg></div><div><b>IoT System</b><span>Smart Waste Bin</span></div></div>
+    <div class="navlabel">ĐIỀU HƯỚNG</div>
+    <nav>
+      <a href="tong-quan.html" data-page="tong-quan"><span class="nav-icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="nav-text">Tổng quan</span></a>
+      <a href="thiet-bi.html" data-page="thiet-bi"><span class="nav-icon-wrap"><img class="nav-icon-img" src="assets/icon/wifi_device.svg" alt="" aria-hidden="true"></span><span class="nav-text"><span class="desktop-label">Thiết bị</span><span class="mobile-label">Thiết bị</span></span></a>
+      <a href="servo.html" data-page="servo"><span class="nav-icon-wrap"><img class="nav-icon-img" src="assets/icon/settings.svg" alt="" aria-hidden="true"></span><span class="nav-text">Điều khiển servo</span></a>
+    </nav>
+    <div class="hw"><div><span>PHẦN CỨNG</span><span class="chip">ESP32-S3</span></div><div><span>TRẠNG THÁI</span><span class="on-t" id="sideOn">CHỜ ESP32</span></div></div>
+  </aside>
+  <main>
+    <div class="top"><i></i>THÙNG RÁC THÔNG MINH</div>
+    <div class="wrap servo-wrap">
+      <h1 class="desktop-h1">Điều khiển servo</h1>
+      <p class="servo-intro">Gửi lệnh trực tiếp đến ESP32 để kiểm tra cửa và chọn ngăn rác.</p>
+      <section class="servo-grid">
+        <article class="card servo-card">
+          <div class="servo-card-head"><div><h2>Servo 1 · Cửa sập</h2><p>GPIO 38 · Góc mở và đóng cửa</p></div></div>
+          <div class="button-row"><button class="servo-button primary" data-servo="1" data-angle="0">Mở cửa <b>0°</b></button><button class="servo-button" data-servo="1" data-angle="105">Đóng cửa <b>105°</b></button></div>
+          <div class="current-angle">Lệnh gần nhất <strong id="servo1-angle">Chưa gửi</strong></div>
+        </article>
+        <article class="card servo-card">
+          <div class="servo-card-head"><div><h2>Servo 2 · Trục xoay</h2><p>GPIO 39 · Định hướng rác vào ngăn</p></div></div>
+          <div class="button-row three"><button class="servo-button" data-servo="2" data-angle="0">Ly giấy <b>0°</b></button><button class="servo-button" data-servo="2" data-angle="90">Chai nhựa <b>90°</b></button><button class="servo-button" data-servo="2" data-angle="180">Lon nước <b>180°</b></button></div>
+          <div class="current-angle">Lệnh gần nhất <strong id="servo2-angle">Chưa gửi</strong></div>
+        </article>
+        <article class="card servo-card manual-card">
+          <div class="servo-card-head"><span class="servo-index gray">↗</span><div><h2>Điều khiển thủ công</h2><p>Chọn servo và đặt góc từ 0° đến 180°</p></div></div>
+          <form id="manual-form" class="manual-controls">
+            <label>Servo<select id="manual-servo"><option value="1">Servo 1 · Cửa nạp</option><option value="2">Servo 2 · Chọn ngăn</option></select></label>
+            <label>Góc <span id="angle-label">90°</span><input id="manual-angle" type="range" min="0" max="180" value="90"><div class="range-labels"><span>0°</span><span>180°</span></div></label>
+            <button class="servo-button primary send-button" type="submit">Gửi lệnh</button>
+          </form>
+        </article>
+      </section>
+      <section class="card latest-predictions" aria-labelledby="prediction-title">
+        <div class="prediction-head">
+          <div><h2 id="prediction-title">5 ảnh dự đoán gần nhất</h2><p>Ảnh đã được YOLO vẽ khung nhận diện, cập nhật khi ESP32 gửi xong một lượt.</p></div>
+          <span id="prediction-batch" class="batch-badge">Đang chờ ảnh</span>
+        </div>
+        <div id="prediction-grid" class="prediction-grid" aria-live="polite">
+          <div class="prediction-empty">Đang chờ ESP32 gửi ảnh…</div>
+        </div>
+      </section>
+      <div id="servo-status" class="servo-status" role="status" aria-live="polite">Đang chờ lệnh.</div>
+      <p class="servo-note">Điều khiển thủ công có thể ảnh hưởng đến chu trình phân loại đang chạy.</p>
+    </div>
+  </main>
+</body>
+</html>

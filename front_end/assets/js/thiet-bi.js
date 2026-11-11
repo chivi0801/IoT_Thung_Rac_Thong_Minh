@@ -1,8 +1,7 @@
 /**
  * ==========================================================================
  * THIẾT BỊ & PHÂN LOẠI JAVASCRIPT (thiet-bi.js)
- * Quản lý trạng thái 3 ngăn rác, cảm biến siêu âm, đặt lại ngăn sau khi
- * đổ rác, cấu hình ngưỡng cảnh báo và mô phỏng luồng AI Vision trực tiếp.
+ * Hiển thị trạng thái ba cảm biến khoảng cách và batch phân loại thật từ backend.
  * ==========================================================================
  */
 
@@ -11,9 +10,9 @@
 
   // Dữ liệu thực từ ESP32 qua Flask endpoint /api/bins.
   var cps = [
-    { id: 1, key: 'or', sensorName: 'giay', name: 'NGĂN SỐ 1 · GIẤY', level: null, distanceMm: null, sensorOk: false },
-    { id: 2, key: 'pl', sensorName: 'nhua', name: 'NGĂN SỐ 2 · NHỰA', level: null, distanceMm: null, sensorOk: false },
-    { id: 3, key: 'me', sensorName: 'kim_loai', name: 'NGĂN SỐ 3 · KIM LOẠI', level: null, distanceMm: null, sensorOk: false }
+    { id: 1, key: 'or', sensorName: 'giay', name: 'NGĂN LY GIẤY', level: null, distanceMm: null, sensorOk: false },
+    { id: 2, key: 'pl', sensorName: 'nhua', name: 'NGĂN CHAI NHỰA', level: null, distanceMm: null, sensorOk: false },
+    { id: 3, key: 'me', sensorName: 'kim_loai', name: 'NGĂN LON NƯỚC', level: null, distanceMm: null, sensorOk: false }
   ];
 
   var cfgDef = { full: 80, conf: 60 };
@@ -120,12 +119,20 @@
           status.classList.toggle('offline', readyCount === 0);
         }
         renderCompartments();
+        var sideStatus = $('sideOn');
+        var deviceStatus = $('devOn');
+        if (sideStatus) sideStatus.textContent = 'ONLINE';
+        if (deviceStatus) deviceStatus.textContent = 'ESP32 · ' + cps.filter(function (c) { return c.sensorOk; }).length + '/3 cảm biến sẵn sàng';
       })
       .catch(function (error) {
         var status = $('sensorConnection');
         if (status) {
           status.textContent = 'Không đọc được ESP32: ' + error.message;
           status.classList.add('offline');
+          var sideStatus = $('sideOn');
+          var deviceStatus = $('devOn');
+          if (sideStatus) sideStatus.textContent = 'OFFLINE';
+          if (deviceStatus) deviceStatus.textContent = 'MẤT KẾT NỐI';
         }
       })
       .finally(function () { polling = false; });
@@ -156,9 +163,9 @@
         }
 
         var types = {
-          can: { name: 'Rác kim loại', category: 'KIM LOẠI' },
-          bottle: { name: 'Rác nhựa', category: 'NHỰA' },
-          'paper cup': { name: 'Rác giấy', category: 'GIẤY' }
+          can: { name: 'Lon nước', category: 'LON NƯỚC' },
+          bottle: { name: 'Chai nhựa', category: 'CHAI NHỰA' },
+          'paper cup': { name: 'Ly giấy', category: 'LY GIẤY' }
         };
         var type = types[payload.class_name] || { name: 'Chưa phân loại', category: 'CHƯA PHÂN LOẠI' };
         var confidence = Number.isFinite(Number(payload.confidence)) ? (Number(payload.confidence) * 100).toFixed(1) + '%' : '--';
@@ -186,94 +193,8 @@
   }
 
   /**
-   * Thiết lập sự kiện thanh trượt cấu hình
-   */
-  function setupConfigSliders() {
-    function bindSlider(id, key) {
-      var el = $(id);
-      var label = $(id + 'V');
-      if (!el || !label) return;
-
-      el.addEventListener('input', function () {
-        label.textContent = el.value + '%';
-        cfg[key] = +el.value;
-        renderCompartments();
-      });
-    }
-
-    bindSlider('thFull', 'full');
-    bindSlider('thConf', 'conf');
-
-    var saveBtn = $('saveCfg');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function () {
-        notify('Đã lưu cấu hình thành công');
-      });
-    }
-
-    var resetBtn = $('resetCfg');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', function () {
-        cfg.full = cfgDef.full;
-        cfg.conf = cfgDef.conf;
-
-        var thFull = $('thFull');
-        var thConf = $('thConf');
-        var thFullV = $('thFullV');
-        var thConfV = $('thConfV');
-
-        if (thFull) thFull.value = cfg.full;
-        if (thConf) thConf.value = cfg.conf;
-        if (thFullV) thFullV.textContent = cfg.full + '%';
-        if (thConfV) thConfV.textContent = cfg.conf + '%';
-
-        renderCompartments();
-        notify('Đã đặt lại cấu hình mặc định');
-      });
-    }
-  }
-
-  /**
    * Đồng hồ cập nhật thời gian uptime và thời điểm liên lạc gần nhất
    */
-  function setupUptimeTicker() {
-    var startTime = Date.now() - (3 * 3600 + 27 * 60) * 1000;
-
-    function tick() {
-      var s = Math.floor((Date.now() - startTime) / 1000);
-      var h = Math.floor(s / 3600);
-      var m = Math.floor((s % 3600) / 60);
-
-      var uptimeEl = $('uptime');
-      if (uptimeEl) {
-        uptimeEl.textContent = h + ' giờ ' + m + ' phút';
-      }
-
-      var lastSeenEl = $('lastSeen');
-      if (lastSeenEl) {
-        var d = new Date();
-        lastSeenEl.textContent = d.toLocaleTimeString('vi-VN') + ' (vừa xong)';
-      }
-    }
-
-    tick();
-    setInterval(tick, 30000);
-  }
-
-  /**
-   * Mô phỏng tín hiệu camera và cảm biến AI Vision trên Mobile
-   */
-  function setupMobileVisionSimulation() {
-    var latencyPill = $('latencyPill');
-    if (!latencyPill) return;
-
-    // Giả lập độ trễ mạng dao động thực tế 110ms - 135ms
-    setInterval(function () {
-      var lat = 115 + Math.floor(Math.random() * 20);
-      latencyPill.textContent = 'Độ trễ: ' + lat + 'ms';
-    }, 4000);
-  }
-
   // Khởi chạy khi DOM sẵn sàng
   document.addEventListener('DOMContentLoaded', function () {
     renderCompartments();
@@ -281,8 +202,8 @@
     window.setInterval(pollBinReadings, 2000);
     pollLatestPrediction();
     window.setInterval(pollLatestPrediction, 2000);
-    setupConfigSliders();
-    setupUptimeTicker();
-    setupMobileVisionSimulation();
+
+
+
   });
 })();
