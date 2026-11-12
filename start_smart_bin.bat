@@ -2,8 +2,8 @@
 setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 
-if not defined ESP32_BINS_URL set "ESP32_BINS_URL=http://192.168.1.31/bins"
-if not defined ESP32_SERVO_URL set "ESP32_SERVO_URL=http://192.168.1.31/servo"
+if not defined ESP32_BINS_URL set "ESP32_BINS_URL=http://10.95.24.60/bins"
+if not defined ESP32_SERVO_URL set "ESP32_SERVO_URL=http://10.95.24.60/servo"
 
 rem Reuse the CUDA-enabled environment from D:\PhanLoaiRac_test on this PC.
 rem Set SMART_BIN_PYTHON to override this path; other PCs fall back to back_end\.venv.

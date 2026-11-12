@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """API nhan 5 frame tu ESP32-S3 va phan loai bang YOLO local."""
 from collections import Counter, defaultdict
 from datetime import datetime
@@ -30,8 +30,8 @@ EXPECTED_MODEL_CLASSES = {
 CONFIDENCE_THRESHOLD = 0.4
 MAX_IMAGES = 5
 UPLOAD_DIR = BACKEND_DIR / "uploads"
-ESP32_BINS_URL = os.environ.get("ESP32_BINS_URL", "http://192.168.1.31/bins")
-ESP32_SERVO_URL = os.environ.get("ESP32_SERVO_URL", "http://192.168.1.31/servo")
+ESP32_BINS_URL = os.environ.get("ESP32_BINS_URL", "http://10.95.24.60/bins")
+ESP32_SERVO_URL = os.environ.get("ESP32_SERVO_URL", "http://10.95.24.60/servo")
 INFERENCE_DEVICE = 0 if torch.cuda.is_available() else "cpu"
 
 # Mapping theo logic servo trong ESP32_S3/code.cpp
